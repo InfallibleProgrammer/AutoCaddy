@@ -39,7 +39,7 @@ void sj2_cli__init(void) {
                                          .app_cli_handler = cli__task_list};
   static app_cli__command_s symbol_table = {.command_name = "symbol",
                                             .help_message_for_command =
-                                                "Outputs symbol value.\n"
+                                                "Read symbol from global memory.\n"
                                                 "symbol <symbol_name> will display symbol value.",
                                             .app_cli_handler = cli__symbol_lookup};
 

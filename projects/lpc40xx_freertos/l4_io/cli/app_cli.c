@@ -62,6 +62,7 @@ static const app_cli__command_s *app_cli__private_find_short_command(const app_c
 static void app_cli__private_handle_command(app_cli_s *cli, const app_cli__command_s *command,
                                             app_cli__argument_t cli_argument, sl_string_s input_string) {
   (void)sl_string__erase_first_word(input_string, ' ');
+  cli->output_function(NULL, "\n");
   const app_cli_status_e command_status = command->app_cli_handler(cli_argument, input_string, cli->output_function);
 
   if (APP_CLI_STATUS__SUCCESS != command_status) {
@@ -132,10 +133,8 @@ static void app_cli__private_handle_help(const app_cli_s *cli, app_cli__argument
 static void app_cli__private_handle_unmatched_command(const app_cli_s *cli, app_cli__argument_t cli_argument,
                                                       sl_string_s input_string) {
   sl_string_s output_string = input_string; // re-use
-
   (void)sl_string__insert_at(output_string, 0, "Unable to match any registered CLI command for: ");
   cli->output_function(cli_argument, sl_string__c_str(output_string));
-
   app_cli__private_print_list_of_all_commands(cli, cli_argument, output_string);
 }
 
@@ -149,6 +148,10 @@ static void app_cli__private_process_input(app_cli_s *cli, app_cli__argument_t c
 
   if (NULL != command) {
     app_cli__private_handle_command(cli, command, cli_argument, input_string);
+  } else if (0 == strcmp(sl_string__c_str(input_string), "")) {
+    // Got command = empty string; force input = help
+    sl_string__set(input_string, "help");
+    app_cli__private_handle_help(cli, cli_argument, input_string);
   } else {
     app_cli__private_handle_unmatched_command(cli, cli_argument, input_string);
   }

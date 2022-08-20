@@ -7,12 +7,12 @@ from symbol_table import SymbolTableContainer
 SYMBOL_TABLE_C_FILE_FORMAT = """\
 #include \"symbol_table.h\"
 
-__attribute__((section(".symbol_table"))) static symbol_table__symbol_s symbol_table[{symbol_table_size}U] = {{
+__attribute__((section(".symbol_table.symbol_table"))) static symbol_table__symbol_s symbol_table[{symbol_table_size}U] = {{
 {symbol_table_entries}
 }};
 
-const size_t symbol_table__size __attribute__((section(".symbol_table_size")))= {symbol_table_size}U;
-const symbol_table__symbol_s *symbol_table__base __attribute__((section(".symbol_table_base")))= symbol_table;
+const symbol_table__symbol_s *symbol_table__list __attribute__((section(".symbol_table.symbol_table__list"), used)) = symbol_table;
+const size_t symbol_table__list_count __attribute__((section(".symbol_table.symbol_table__list_count"), used)) = {symbol_table_size}U;
 """
 
 STRUCT_FORMAT = '''\
@@ -29,11 +29,11 @@ STRUCT_FORMAT = '''\
 
 class SymbolTableCodeWriter():
     def __init__(self, file):
-        self.symbol_table_container = SymbolTableContainer.deserialize(file)
+        self._symbol_table_container = SymbolTableContainer.deserialize(file)
 
     def generate_c_file(self, c_filepath):
         symbol_string_list = []
-        for symbol in self.symbol_table_container.symbol_table:
+        for symbol in self._symbol_table_container.symbol_table:
             address = "0x{}".format(symbol.address[2:].zfill(8))
             data_type = "data_type_{}".format(symbol.data_type.value)
             bit_size = symbol.bit_size if (None != symbol.bit_size) else 0
@@ -44,8 +44,12 @@ class SymbolTableCodeWriter():
         struct_string = "".join(symbol_string_list)
 
         c_file = SYMBOL_TABLE_C_FILE_FORMAT.format(
-            symbol_table_size=self.symbol_table_container.count,
+            symbol_table_size=self._symbol_table_container.count,
             symbol_table_entries=struct_string,)
 
         with open(c_filepath, "w") as file:
             file.write(c_file)
+
+    @property
+    def symbol_table_container(self):
+        return self._symbol_table_container

@@ -16,7 +16,7 @@ class Artifacts(object):
 
 class EnvironmentBuilder(object):
     def __init__(self, environment):
-        self._environment = environment
+        self._environment = environment.Clone()
 
     #
     # Public methods
@@ -83,3 +83,7 @@ class EnvironmentBuilder(object):
         option = "-Wl,-Map,{}".format(map_filenode.abspath)
         if option not in self._environment["LINKFLAGS"]:
             self._environment["LINKFLAGS"].append(option)
+
+    @property
+    def environment(self):
+        return self._environment

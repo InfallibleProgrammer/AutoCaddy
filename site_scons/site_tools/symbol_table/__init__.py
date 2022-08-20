@@ -2,6 +2,8 @@ from SCons.Script import *
 
 import os
 
+import osops
+
 
 SELF_DIR = Dir(os.path.dirname(__file__))
 GENERATE_SYMBOL_TABLE_PY = SELF_DIR.File("generate_symbol_table.py")
@@ -32,7 +34,7 @@ def symbol_table_generator_method(env, source, target):
     output_filenodes.append(target.File("{}_symbol_table.{}".format(basename, "log")))
 
     command = [
-        "python",
+        osops.get_python_exe(),
         GENERATE_SYMBOL_TABLE_PY.abspath,
         "$SOURCE",
         "--output $TARGETS",
@@ -54,7 +56,7 @@ def symbol_table_c_generator_method(env, source, target):
     output_filenode = target.File("{}.{}".format(basename, "c"))
 
     command = [
-        "python",
+        osops.get_python_exe(),
         GENERATE_C_SYMBOL_TABLE_PY.abspath,
         "$SOURCE",
         "--output=$TARGET",

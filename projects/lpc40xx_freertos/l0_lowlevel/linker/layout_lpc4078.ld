@@ -107,10 +107,8 @@ SECTIONS
 
     .symbol_table : ALIGN(4)
     {
-        _symbol_start = .;
-        *(.symbol_table*)
+        *(.symbol_table.*)
         . = ALIGN(4) ;
-        PROVIDE(_symbol_end = .);
     } > flash_512k
 
     _etext = .;

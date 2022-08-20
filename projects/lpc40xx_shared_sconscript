@@ -11,7 +11,7 @@ dbc_node_name = GetOption("dbc_node_name")
 no_clang_format = GetOption("no_clang_format")
 no_unit_test = GetOption("no_unit_test")
 test_output = GetOption("test_output")
-no_symbol_table = GetOption("no_symbol_table")
+symbol_table = GetOption("symbol_table")
 timeout = GetOption("timeout")
 verbose = GetOption("verbose")
 
@@ -67,20 +67,20 @@ if not no_clang_format:
         exclude_dirname_patterns=exclude_dir_patterns,
     )
     for filenode in format_filenodes:
-        env_arm.ClangFormat(filenode=filenode, verbose=verbose)
+        environment_builder.environment.ClangFormat(filenode=filenode, verbose=verbose)
 
 """
 Generate code based on discovered DBCs
 """
 for node in Glob("{}/*.dbc".format(DBC_DIRS.abspath)):
-    env_arm.DatabaseCodeGenerator(source=node, target=AUTO_GENERATED_CODE_DIR, node_name=dbc_node_name)
+    environment_builder.environment.DatabaseCodeGenerator(source=node, target=AUTO_GENERATED_CODE_DIR, node_name=dbc_node_name)
 
 """
 Unit test
 """
 if not no_unit_test:
     env_x86 = env.register_environment("env_x86")
-    env_x86.Append(CPPPATH=env_arm["CPPPATH"])
+    env_x86.Append(CPPPATH=environment_builder.environment["CPPPATH"])
     unit_test_results = env_x86.Test(
         source=sources.unit_test_filenodes,
         target=UNIT_TEST_BUILD_DIR,
@@ -94,19 +94,22 @@ if not no_unit_test:
 """
 Symbol table
 """
-if not no_symbol_table:
-    symbol_table_generator_results = env_arm.SymbolTableGenerator(source=artifacts.elf_filenode, target=SYMBOL_TABLE_DIR)
+if symbol_table:
+    environment_builder_symbol_table = EnvironmentBuilder(environment=env_arm)
+
+    symbol_table_generator_results = environment_builder_symbol_table.environment.SymbolTableGenerator(source=artifacts.elf_filenode, target=SYMBOL_TABLE_DIR)
     Depends(symbol_table_generator_results, artifacts.elf_filenode)
 
-    symbol_table_code_generator_results = env_arm.SymbolTableCodeGenerator(source=symbol_table_generator_results, target=SYMBOL_TABLE_DIR)
+    symbol_table_code_generator_results = environment_builder_symbol_table.environment.SymbolTableCodeGenerator(source=symbol_table_generator_results, target=SYMBOL_TABLE_DIR)
     Depends(symbol_table_code_generator_results, symbol_table_generator_results)
 
     symbol_table_source = File(symbol_table_code_generator_results[0])
     sources.source_filenodes.append(symbol_table_source)
 
-    symbol_table_artifacts = environment_builder.build(
+    symbol_table_artifacts = environment_builder_symbol_table.build(
         base_filename=fsops.basename(symbol_table_source),
         output_dirnode=VARIANT_DIR,
         sources=sources,
     )
     Depends(symbol_table_artifacts.elf_filenode, symbol_table_code_generator_results)
+

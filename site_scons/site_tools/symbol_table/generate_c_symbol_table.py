@@ -3,6 +3,8 @@ import json
 import os
 import sys
 
+import prettytable
+
 from color import ColorString
 from symbol_table_code_writer import SymbolTableCodeWriter
 
@@ -22,6 +24,7 @@ def get_args():
     )
     return arg_parser.parse_args()
 
+
 def main():
     args = get_args()
     json_filepath = "".join(args.json_filepath)
@@ -35,6 +38,7 @@ def main():
         c_filepath = os.path.join(c_output, c_filename)
     else:
         c_filepath = c_output
+    output_dirpath = os.path.dirname(c_filepath)
 
     if not os.path.isdir(os.path.dirname(c_filepath)):
         os.makedirs(os.path.dirname(c_filepath))
@@ -52,6 +56,26 @@ def main():
 
         symbol_table_cw.generate_c_file(c_filepath)
 
+    pretty_table = generate_pretty_table(symbol_table_cw.symbol_table_container.symbol_table)
+    with open(os.path.join(output_dirpath, "symbol_table.txt"), "w") as file:
+        file.write(str(pretty_table))
+
     return 0
+
+def generate_pretty_table(symbol_table):
+    pretty_table = prettytable.PrettyTable()
+    pretty_table.field_names = ["Name", "Address", "Data type", "Size (bytes)"]
+    pretty_table.hrules = prettytable.ALL
+    pretty_table.align["Name"] = "l"
+    pretty_table.align["Address"] = "l"
+    pretty_table.align["Data type"] = "l"
+    pretty_table.align["Size (bytes)"] = "c"
+
+    for symbol in symbol_table:
+        pretty_table.add_row([symbol.name, symbol.address,  symbol.data_type.value, symbol.size])
+
+    return pretty_table
+
+
 if __name__ == "__main__":
     sys.exit(main())

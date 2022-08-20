@@ -24,6 +24,7 @@ def get_args():
     )
     return arg_parser.parse_args()
 
+
 def main():
     args = get_args()
     elf_filepath = "".join(args.elf_filepath)

@@ -1,35 +1,70 @@
-#include <stdbool.h>
+#include <stdio.h>
+#include <string.h>
 
 #include "symbol_table.h"
 
-const size_t symbol_table__size __attribute__((section(".symbol_table_size"), weak));
-const symbol_table__symbol_s *symbol_table__base __attribute__((section(".symbol_table_base"), weak));
+/*
+ * Need optimization disabled for this file to prevent the compiler from discarding symbol_table__list_count (inlined as
+ * constant). This behavior is observable in the map file.
+ */
+#pragma GCC optimize "0"
 
-const symbol_table__symbol_s *symbol_table__lookup_symbol(const sl_string_s symbol_name) {
-  const symbol_table__symbol_s *symbol = NULL;
-  const char *name = sl_string__c_str(symbol_name);
-  if (NULL != name) {
-    bool symbol_found = false;
-    size_t index = 0;
-    const symbol_table__symbol_s *symbol_ptr = symbol_table__base;
+/*
+ * Symbol table and its size must be weak symbols to pass the first stage compilation, essentially a stub
+ * implementation. The second compilation state optionally overwrites these weak symbol with a non-null symbol table
+ * entry.
+ */
+const symbol_table__symbol_s *symbol_table__list __attribute__((section(".symbol_table.symbol_table__list"), weak)) =
+    NULL;
+const size_t symbol_table__list_count __attribute__((section(".symbol_table.symbol_table__list_count"), weak)) = 0U;
 
-    for (index = 0; index < symbol_table__size; index++, symbol_ptr++) {
-      symbol_found = sl_string__equals_to(symbol_name, symbol_ptr->name);
-      if (symbol_found) {
-        symbol = symbol_ptr;
+
+bool symbol_table__is_empty(void) {
+  return (NULL == symbol_table__list);
+}
+
+bool symbol_table__iter(symbol_table__symbol_s *symbol, size_t *index) {
+  bool continue_iteration = false;
+
+  if ((NULL != symbol) && (NULL != index) && (symbol_table__list != NULL)) {
+    if (*index < symbol_table__list_count) {
+      *symbol = symbol_table__list[*index];
+      ++(*index);
+      // Continue iteration if the symbol's address is valid; otherwise, caller should end iteration and not use the
+      // invalid symbol
+      continue_iteration = (NULL != symbol->address);
+    }
+  }
+
+  return continue_iteration;
+}
+
+bool symbol_table__find(symbol_table__symbol_s *symbol, const char *name) {
+  bool found = false;
+
+  if ((NULL != symbol) && (NULL != name) && (symbol_table__list != NULL)) {
+    size_t index = 0U;
+    symbol_table__symbol_s found_symbol = {0};
+    while (symbol_table__iter(&found_symbol, &index)) {
+      if (0 == strcmp(found_symbol.name, name)) {
+        *symbol = found_symbol;
+        found = true;
         break;
       }
     }
   }
-  return symbol;
+
+  return found;
 }
 
-size_t symbol_table__get_symbol_data(const symbol_table__symbol_s *symbol, sl_string_s output) {
-  size_t string_size = 0U;
-  if (NULL != symbol) {
-    const size_t BITS_IN_BYTE = 8U;
+bool symbol_table__get_data_repr(const symbol_table__symbol_s *symbol, char *str_buffer, size_t str_buffer_size) {
+  bool valid = false;
 
-    size_t bits_in_n_bytes = BITS_IN_BYTE * symbol->size;
+  if ((NULL != symbol) && (NULL != str_buffer) && (str_buffer_size > 0U) && (symbol_table__list != NULL)) {
+    const size_t bits_in_bytes = 8U;
+    const size_t symbol_bytes = bits_in_bytes * symbol->size;
+
+    int snprintf_ret = -1;
     size_t mask = ~0U;
     size_t bit_offset = 0U;
 
@@ -38,64 +73,66 @@ size_t symbol_table__get_symbol_data(const symbol_table__symbol_s *symbol, sl_st
     }
 
     if (0U != symbol->bit_offset || 0U != symbol->bit_size) {
-      bit_offset = (bits_in_n_bytes - symbol->bit_size - symbol->bit_offset);
+      bit_offset = (symbol_bytes - symbol->bit_size - symbol->bit_offset);
     }
 
     switch (symbol->data_type) {
     case data_type_uintptr_t:
-      // do nothing
+      snprintf_ret = snprintf(str_buffer, str_buffer_size, "0x%X\n", ((*(uintptr_t *)symbol->address)));
       break;
     case data_type_bool:
-      string_size = sl_string__printf(output, "%d\n", ((*(bool *)symbol->address)));
+      snprintf_ret = snprintf(str_buffer, str_buffer_size, "%d\n", ((*(bool *)symbol->address)));
       break;
     case data_type_char:
-      string_size = sl_string__printf(output, "%c\n", ((*(char *)symbol->address)));
+      snprintf_ret = snprintf(str_buffer, str_buffer_size, "%c\n", ((*(char *)symbol->address)));
       break;
     case data_type_float:
-      // type cast to double to suppress float to double promotion warning
-      string_size = sl_string__printf(output, "%f\n", (double)(*(float *)symbol->address));
-      break;
+      // Fall through
     case data_type_double:
-      string_size = sl_string__printf(output, "%f\n", (*(double *)symbol->address));
+      snprintf_ret = snprintf(str_buffer, str_buffer_size, "%.6f\n", (*(double *)symbol->address));
       break;
     case data_type_int8_t:
-      string_size =
-          sl_string__printf(output, "%d\n", ((*(int8_t *)symbol->address) & (mask << bit_offset)) >> bit_offset);
+      snprintf_ret = snprintf(str_buffer, str_buffer_size, "%d\n",
+                              ((*(int8_t *)symbol->address) & (mask << bit_offset)) >> bit_offset);
       break;
     case data_type_int16_t:
-      string_size =
-          sl_string__printf(output, "%d\n", ((*(int16_t *)symbol->address) & (mask << bit_offset)) >> bit_offset);
+      snprintf_ret = snprintf(str_buffer, str_buffer_size, "%d\n",
+                              ((*(int16_t *)symbol->address) & (mask << bit_offset)) >> bit_offset);
       break;
     case data_type_int32_t:
-      string_size =
-          sl_string__printf(output, "%ld\n", ((*(int32_t *)symbol->address) & (mask << bit_offset)) >> bit_offset);
+      snprintf_ret = snprintf(str_buffer, str_buffer_size, "%ld\n",
+                              ((*(int32_t *)symbol->address) & (mask << bit_offset)) >> bit_offset);
       break;
     case data_type_int64_t:
       // type cast to int32_t because newlib-nano does not support 64-bit integers, truncate to 32-bits
-      string_size = sl_string__printf(output, "%ld\n",
-                                      ((int32_t)(*(int64_t *)symbol->address) & (mask << bit_offset)) >> bit_offset);
+      snprintf_ret = snprintf(str_buffer, str_buffer_size, "%ld\n",
+                              ((int32_t)(*(int64_t *)symbol->address) & (mask << bit_offset)) >> bit_offset);
       break;
     case data_type_uint8_t:
-      string_size =
-          sl_string__printf(output, "%u\n", ((*(uint8_t *)symbol->address) & (mask << bit_offset)) >> bit_offset);
+      snprintf_ret = snprintf(str_buffer, str_buffer_size, "%u\n",
+                              ((*(uint8_t *)symbol->address) & (mask << bit_offset)) >> bit_offset);
       break;
     case data_type_uint16_t:
-      string_size =
-          sl_string__printf(output, "%u\n", ((*(uint16_t *)symbol->address) & (mask << bit_offset)) >> bit_offset);
+      snprintf_ret = snprintf(str_buffer, str_buffer_size, "%u\n",
+                              ((*(uint16_t *)symbol->address) & (mask << bit_offset)) >> bit_offset);
       break;
     case data_type_uint32_t:
-      string_size =
-          sl_string__printf(output, "%lu\n", ((*(uint32_t *)symbol->address) & (mask << bit_offset)) >> bit_offset);
+      snprintf_ret = snprintf(str_buffer, str_buffer_size, "%lu\n",
+                              ((*(uint32_t *)symbol->address) & (mask << bit_offset)) >> bit_offset);
       break;
     case data_type_uint64_t:
       // type cast to uint32_t because newlib-nano does not support 64-bit integers, truncate to 32-bits
-      string_size = sl_string__printf(output, "%lu\n",
-                                      ((uint32_t)(*(uint64_t *)symbol->address) & (mask << bit_offset)) >> bit_offset);
+      snprintf_ret = snprintf(str_buffer, str_buffer_size, "%lu\n",
+                              ((uint32_t)(*(uint64_t *)symbol->address) & (mask << bit_offset)) >> bit_offset);
       break;
     default:
-      // Do nothing
       break;
     }
+
+    if (snprintf_ret > 0) {
+      valid = true;
+    }
   }
-  return string_size;
+
+  return valid;
 }
