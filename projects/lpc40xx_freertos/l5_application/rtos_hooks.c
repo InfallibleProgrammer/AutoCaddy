@@ -21,7 +21,7 @@ static void halt(const char *message) {
 }
 
 /// Invoked by FreeRTOS when it detects stack overflow: #if (0 != configCHECK_FOR_STACK_OVERFLOW)
-void vApplicationStackOverflowHook(TaskHandle_t task_handle, signed char *task_name) {
+void vApplicationStackOverflowHook(TaskHandle_t task_handle, char *task_name) {
   uart_puts__polled(UART__0, "stack overflow by this task:");
   halt((const char *)task_name);
 }
