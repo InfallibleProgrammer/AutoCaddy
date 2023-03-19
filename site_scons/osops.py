@@ -3,6 +3,7 @@ osops - OS related operations
 """
 
 import os
+import shutil
 import sys
 
 from SCons.Script import *
@@ -38,3 +39,19 @@ def is_linux():
 
 def is_macos():
     return "darwin" == sys.platform
+
+
+def get_python_exe():
+    """
+    :return: python executable file name, python3 if it exists in PATH else return python.
+
+    For Windows, use python unconditionally. Windows comes installed with both stub `python3` and `python` programs that
+    points to the Microsoft Store where the actual Python can be installed.
+    Manual Python installations from the Python website directly come with `python` only.
+    """
+    ret = "python"
+    if not is_windows():
+        if shutil.which("python3"):
+            ret = "python3"
+    return ret
+

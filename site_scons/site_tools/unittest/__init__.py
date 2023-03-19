@@ -220,7 +220,7 @@ def execute_unit_tests(env, exe_filenodes, summary_only=False, timeout=None):
     # Example:
     # python <UNIT_TEST_RUNNER_PY> -i <exe> -i <exe> -i <exe>
     command = [
-        "python",
+        osops.get_python_exe(),
         "\"{}\"".format(UNIT_TEST_RUNNER_PY.abspath),
     ]
     if summary_only:

@@ -3,6 +3,7 @@
 #include "FreeRTOS.h"
 #include "task.h"
 
+#include "freertos_runtime_stats.h"
 #include "uart_printf.h"
 
 static void cli__task_list_print(sl_string_s user_input_minus_command_name, app_cli__print_string_function cli_output);

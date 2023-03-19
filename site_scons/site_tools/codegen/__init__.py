@@ -4,6 +4,8 @@ import os
 import subprocess
 import sys
 
+import osops
+
 SELF_DIR = Dir(os.path.dirname(__file__))
 DBC_TO_C_PY = SELF_DIR.File("dbc_to_c.py")
 
@@ -47,7 +49,8 @@ def database_code_generator_method(env, source, target, node_name=None):
         output_filenode = target.File("{}.{}".format(basename, "h"))
 
         command = [
-            "python3",
+            osops.get_python_exe(),
+
             "\"{}\"".format(DBC_TO_C_PY),
             "--dbc=$SOURCE",
             "--output=$TARGET",
