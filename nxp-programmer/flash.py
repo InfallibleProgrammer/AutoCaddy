@@ -81,7 +81,7 @@ def main():
     sys.stdout.flush()
 
     cmd = [
-        "python",
+        "python3",
         NXPPROG_PY,
         "--binary={}".format(input_filepath),
         "--device={}".format(device_id),

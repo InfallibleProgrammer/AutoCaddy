@@ -47,7 +47,7 @@ def database_code_generator_method(env, source, target, node_name=None):
         output_filenode = target.File("{}.{}".format(basename, "h"))
 
         command = [
-            "python",
+            "python3",
             "\"{}\"".format(DBC_TO_C_PY),
             "--dbc=$SOURCE",
             "--output=$TARGET",

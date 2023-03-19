@@ -1,6 +1,8 @@
 #include "periodic_callbacks.h"
 
 #include "board_io.h"
+#include "can_bus_initializer.h"
+#include "can_module.h"
 #include "gpio.h"
 
 /******************************************************************************
@@ -8,12 +10,19 @@
  * For 1Hz, the function must return within 1000ms
  * For 1000Hz, the function must return within 1ms
  */
+#define AXIS_0_ID 3u
+#define AXIS_1_ID 1u
 void periodic_callbacks__initialize(void) {
   // This method is invoked once when the periodic tasks are created
+  can_bus_initializer();
+  initCanMotorPackets(AXIS_0_ID, AXIS_1_ID);
 }
 
 void periodic_callbacks__1Hz(uint32_t callback_count) {
-  gpio__toggle(board_io__get_led0());
+  // gpio__toggle(board_io__get_led0());
+
+  periodic_callbacks_1Hz_Velocity();
+  can_bus_handler__process_all_received_messages();
   // Add your code here
 }
 
