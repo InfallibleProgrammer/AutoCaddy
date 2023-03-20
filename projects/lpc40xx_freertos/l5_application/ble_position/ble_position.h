@@ -8,7 +8,13 @@ typedef enum {
   LONGITUDE = 0,
   LATITUDE,
   STOP,
+  KEYWORD_COUNT,
 } keyword_e;
+
+typedef struct {
+  long double latitude;
+  long double longitutde;
+} coordinate_s;
 
 //  if (uart__get(UART__3, &message_buffer[index], 1000U)) {
 //       if (message_buffer[index] == ':') {
@@ -25,5 +31,5 @@ typedef enum {
 //         index++;
 //       }
 
-keyword_e parse_keyword(char *message_buffer, size_t message_size);
-long double parse_latitude_longitude(char *message_buffer, size_t message_size);
+void ble_module_init(void);
+bool ble_module_init_periodic(coordinate_s* cooridnate);
