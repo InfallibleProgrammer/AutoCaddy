@@ -50,6 +50,7 @@ def database_code_generator_method(env, source, target, node_name=None):
 
         command = [
             osops.get_python_exe(),
+
             "\"{}\"".format(DBC_TO_C_PY),
             "--dbc=$SOURCE",
             "--output=$TARGET",
