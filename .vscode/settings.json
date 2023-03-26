@@ -1,6 +1,0 @@
-{
-    "files.associations": {
-        "geo_logic.h": "c",
-        "can_bus_initializer.h": "c"
-    }
-}
