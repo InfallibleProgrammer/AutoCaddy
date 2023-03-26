@@ -4,6 +4,7 @@
 #include "can_packet.h"
 #include "delay.h"
 #include <stdbool.h>
+#include <stdio.h>
 uint8_t motorState = 0;
 
 static bool isMotorCalibrated = false;

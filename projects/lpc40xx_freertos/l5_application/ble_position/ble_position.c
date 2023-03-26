@@ -8,7 +8,6 @@ static size_t index = 0U;
 static char coordinate_buffer[512U] = {0U};
 static keyword_e parsed_keyword = KEYWORD_COUNT;
 
-
 static keyword_e parse_keyword(char *message_buffer, size_t message_size) {
   keyword_e keyword = STOP;
 
@@ -42,10 +41,9 @@ static long double parse_latitude_longitude(char *message_buffer, size_t message
   return (sign) ? value : (-value);
 }
 
-static bool handle_latitude_longitude(long double parsed_coordinate, coordinate_s* coordinate) {
+static bool handle_latitude_longitude(long double parsed_coordinate, coordinate_s *coordinate) {
   bool coordinate_complete = false;
-  switch (parsed_keyword)
-  {
+  switch (parsed_keyword) {
   case LONGITUDE:
     coordinate->longitutde = parsed_coordinate;
     break;
@@ -61,19 +59,17 @@ static bool handle_latitude_longitude(long double parsed_coordinate, coordinate_
   return coordinate_complete;
 }
 
-void ble_module_init(void) {
-  uart3_init();
-}
+void ble_module_init(void) { uart3_init(); }
 
-bool ble_module_init_periodic(coordinate_s* cooridnate) {
+bool ble_module_init_periodic(coordinate_s *cooridnate) {
   bool coordinate_parsed = false;
-  if(uart__get(UART__3, &coordinate_buffer[index], 0U)) {
-    if(coordinate_buffer[index] == ':') {
-      //parse keyword
+  if (uart__get(UART__3, &coordinate_buffer[index], 0U)) {
+    if (coordinate_buffer[index] == ':') {
+      // parse keyword
       parsed_keyword = parse_keyword(coordinate_buffer, index);
       memset(coordinate_buffer, 0U, sizeof(coordinate_buffer));
       index = 0U;
-    } else if(coordinate_buffer[index] == ',') {
+    } else if (coordinate_buffer[index] == ',') {
       // parse lat_long
       const long double value = parse_latitude_longitude(coordinate_buffer, index);
       coordinate_parsed = handle_latitude_longitude(value, cooridnate);
