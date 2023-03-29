@@ -70,11 +70,7 @@ bool ble_position__periodic(coordinate_s *cooridnate) {
       // parse keyword
       parsed_keyword = ble_position__parse_keyword(coordinate_buffer, index);
       memset(coordinate_buffer, 0U, sizeof(coordinate_buffer));
-      index = 0U;
     } else if (coordinate_buffer[index] == ',') {
-      // parse lat_long
-      const long double value = ble_position__parse_latitude_longitude(coordinate_buffer, index);
-      coordinate_parsed = ble_position__handle_latitude_longitude(value, cooridnate);
       memset(coordinate_buffer, 0U, sizeof(coordinate_buffer));
       index = 0U;
     } else {
