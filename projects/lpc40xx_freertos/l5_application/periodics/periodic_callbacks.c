@@ -1,10 +1,10 @@
 #include "periodic_callbacks.h"
 
+#include "ble_position.h"
 #include "board_io.h"
 #include "can_bus_initializer.h"
 #include "can_module.h"
 #include "gpio.h"
-#include "ble_position.h"
 
 /******************************************************************************
  * Your board will reset if the periodic function does not return within its deadline
@@ -19,8 +19,8 @@ static coordinate_s cellular_coordinates = {0U};
 void periodic_callbacks__initialize(void) {
   // This method is invoked once when the periodic tasks are created
   can_bus_initializer();
-  // initCanMotorPackets(AXIS_0_ID, AXIS_1_ID); 
-  ble_module_init();
+  // initCanMotorPackets(AXIS_0_ID, AXIS_1_ID);
+  ble_position__init();
 }
 
 void periodic_callbacks__1Hz(uint32_t callback_count) {
@@ -34,11 +34,11 @@ void periodic_callbacks__1Hz(uint32_t callback_count) {
 void periodic_callbacks__10Hz(uint32_t callback_count) {
   gpio__toggle(board_io__get_led1());
   // Add your code here
+  (void)ble_position__periodic(&cellular_coordinates);
 }
 void periodic_callbacks__100Hz(uint32_t callback_count) {
   // Add your code here
   // add logic to send coordinate to queue or flag other periodic to process coordinate
-  (void)ble_module_init_periodic(&cellular_coordinates);
 }
 
 /**
