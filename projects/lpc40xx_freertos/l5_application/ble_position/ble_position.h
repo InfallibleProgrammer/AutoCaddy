@@ -31,5 +31,5 @@ typedef struct {
 //         index++;
 //       }
 
-void ble_module_init(void);
-bool ble_module_init_periodic(coordinate_s *cooridnate);
+void ble_position__init(void);
+bool ble_position__periodic(coordinate_s *cooridnate);

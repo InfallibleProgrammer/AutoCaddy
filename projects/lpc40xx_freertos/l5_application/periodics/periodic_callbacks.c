@@ -21,11 +21,11 @@ static coordinate_s cellular_coordinates = {0U};
 
 void periodic_callbacks__initialize(void) {
   // This method is invoked once when the periodic tasks are created
-  // can_bus_initializer();
-  // initCanMotorPackets(AXIS_0_ID, AXIS_1_ID);
-  //  ble_module_init();
   compass__init();
   gps__init();
+  can_bus_initializer();
+  // initCanMotorPackets(AXIS_0_ID, AXIS_1_ID);
+  ble_position__init();
 }
 
 void periodic_callbacks__1Hz(uint32_t callback_count) {
@@ -46,6 +46,7 @@ void periodic_callbacks__10Hz(uint32_t callback_count) {
     const dbc_COMPASS_HEADING_DISTANCE_s current_compass_data = determine_compass_heading_and_distance();
   }
   // Add your code here
+  (void)ble_position__periodic(&cellular_coordinates);
 }
 void periodic_callbacks__100Hz(uint32_t callback_count) {
   // Add your code here

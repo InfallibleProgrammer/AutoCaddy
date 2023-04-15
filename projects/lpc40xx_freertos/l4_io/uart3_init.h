@@ -11,7 +11,7 @@
  * You can modify the queue sizes based on your preference
  */
 static inline void uart3_init(void) {
-  uart__init(UART__3, clock__get_peripheral_clock_hz(), 115200);
+  uart__init(UART__3, clock__get_peripheral_clock_hz(), 9600);
 
   // UART3 is on P4.28, P4.29
   gpio__construct_with_function(GPIO__PORT_4, 28, GPIO__FUNCTION_2);
