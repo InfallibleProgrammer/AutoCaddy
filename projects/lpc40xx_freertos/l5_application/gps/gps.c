@@ -45,7 +45,7 @@
 static char line_buffer[256];
 static line_buffer_s line;
 
-static uart_e gps_uart = UART__3;
+static uart_e gps_uart = UART__2;
 static gps_coordinates_t parsed_coordinates;
 static gpio_s gps_fix = {0, 6};
 // static bool gps_lock_status;
@@ -146,8 +146,8 @@ static void gps__parse_coordinates_from_line(void) {
 
 void gps__init(void) {
   line_buffer__init(&line, line_buffer, sizeof(line_buffer));
-  gpio__construct_with_function(GPIO__PORT_4, 28, GPIO__FUNCTION_2);
-  gpio__construct_with_function(GPIO__PORT_4, 29, GPIO__FUNCTION_2);
+  gpio__construct_with_function(GPIO__PORT_2, 8, GPIO__FUNCTION_2);
+  gpio__construct_with_function(GPIO__PORT_2, 9, GPIO__FUNCTION_2);
   gpio__construct_with_function(GPIO__PORT_0, 6, GPIO__FUNCITON_0_IO_PIN);
   gpio__set_as_input(gps_fix);
 

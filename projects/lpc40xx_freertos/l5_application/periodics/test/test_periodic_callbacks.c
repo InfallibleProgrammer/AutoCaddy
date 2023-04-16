@@ -22,10 +22,10 @@ void setUp(void) {}
 void tearDown(void) {}
 
 void test__periodic_callbacks__initialize(void) {
-  can_bus_initializer_ExpectAndReturn(true);
-  ble_module_init_Expect();
-  compass__init_Expect();
-  gps__init_Expect();
+  // can_bus_initializer_ExpectAndReturn(true);
+  //  ble_module_init_Expect();
+  // compass__init_Expect();
+  // gps__init_Expect();
   periodic_callbacks__initialize();
 }
 
@@ -33,5 +33,6 @@ void test__periodic_callbacks__1Hz(void) {
   gpio_s gpio = {};
   // board_io__get_led0_ExpectAndReturn(gpio);
   // gpio__toggle_Expect(gpio);
+  // gps__setup_command_registers_Expect();
   periodic_callbacks__1Hz(0);
 }

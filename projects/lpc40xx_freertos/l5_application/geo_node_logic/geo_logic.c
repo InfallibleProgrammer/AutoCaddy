@@ -45,7 +45,10 @@ static dbc_GPS_CURRENT_INFO_s current_RC_CAR_location = {0U};
 static dbc_COMPASS_HEADING_DISTANCE_s current_destination_information = {0U};
 
 static gps_coordinates_t rc_car, destination;
-static coordinate_s phone_location;
+// static coordinate_s phone_location = {.latitude = 37.40183, .longitutde = -121.88074};
+static coordinate_s phone_location = {.latitude = 37.40183, .longitutde = -121.88065};
+
+static bool phone_location_received;
 static float distance;
 /***********************************************************************************************************************
  *
@@ -119,7 +122,10 @@ static float calculate_destination_bearing(void) {
  *                                          P U B L I C   F U N C T I O N S
  *
  **********************************************************************************************************************/
-void set_phone_location(coordinate_s destination_coordinate) { phone_location = destination_coordinate; };
+void set_phone_location(coordinate_s destination_coordinate) {
+  phone_location = destination_coordinate;
+  phone_location_received = true;
+};
 
 dbc_GPS_CURRENT_INFO_s geo_controller_process_GEO_current_location(void) {
   gps_coordinates_t gps_peripheral_data;
@@ -137,7 +143,7 @@ dbc_COMPASS_HEADING_DISTANCE_s determine_compass_heading_and_distance(void) {
   // current_destination_information.DESTINATION_HEADING = get_current_bearing();
   current_destination_information.DISTANCE = calculate_distance_rc_car_to_destination_in_meters();
   printf("Destination bearing: %f\n", current_destination_information.DESTINATION_HEADING);
-  printf("Destination distance in meters: %f", current_destination_information.DISTANCE);
+  printf("Destination distance in meters: %f\n", current_destination_information.DISTANCE);
   return current_destination_information;
 }
 

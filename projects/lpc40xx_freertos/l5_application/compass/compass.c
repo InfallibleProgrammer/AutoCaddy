@@ -25,7 +25,7 @@ void compass__run_once(void) {
   uint8_t items_to_read = 2;
   i2c__read_slave_data(I2C__2, 0xC0, 0x02, data, items_to_read);
   heading = ((0xFF00 & ((uint8_t)data[0] << 8)) | (0x00FF & ((uint8_t)data[1]))) / 10.0;
-  printf("Heading %d\n", heading);
+  printf("Heading %f\n", heading);
 }
 
 float compass__run_once_get_heading(void) { return heading; }
