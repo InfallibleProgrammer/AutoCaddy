@@ -1,10 +1,11 @@
 #include "periodic_callbacks.h"
 
+#include "ble_position.h"
 #include "board_io.h"
 #include "can_bus_initializer.h"
 #include "can_module.h"
 #include "gpio.h"
-#include "ble_position.h"
+#include "load_sensor.h"
 
 /******************************************************************************
  * Your board will reset if the periodic function does not return within its deadline
@@ -15,12 +16,14 @@
 #define AXIS_1_ID 1u
 
 static coordinate_s cellular_coordinates = {0U};
+static int32_t weight_reading = 0;
 
 void periodic_callbacks__initialize(void) {
   // This method is invoked once when the periodic tasks are created
   can_bus_initializer();
-  // initCanMotorPackets(AXIS_0_ID, AXIS_1_ID); 
+  // initCanMotorPackets(AXIS_0_ID, AXIS_1_ID);
   ble_module_init();
+  load_sensor__init();
 }
 
 void periodic_callbacks__1Hz(uint32_t callback_count) {
@@ -28,6 +31,10 @@ void periodic_callbacks__1Hz(uint32_t callback_count) {
 
   periodic_callbacks_1Hz_Velocity();
   can_bus_handler__process_all_received_messages();
+  if (load_sensor__is_ready()) {
+    int32_t sensor_value = load_sensor__read();
+    printf("weight: %li\n", sensor_value);
+  }
   // Add your code here
 }
 

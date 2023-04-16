@@ -1,8 +1,8 @@
 #pragma once
 
-#include <stdint.h>
 #include <stdbool.h>
 #include <stddef.h>
+#include <stdint.h>
 
 typedef enum {
   LONGITUDE = 0,
@@ -32,4 +32,4 @@ typedef struct {
 //       }
 
 void ble_module_init(void);
-bool ble_module_init_periodic(coordinate_s* cooridnate);
+bool ble_module_init_periodic(coordinate_s *cooridnate);
