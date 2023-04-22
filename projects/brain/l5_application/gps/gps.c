@@ -167,13 +167,14 @@ void gps__setup_command_registers(void) {
   if (is_setup == false) {
     static const char update_rate_10hz[] = "$PMTK220,100*2F\r\n";
     static const char disable_except_gpgga[] = "$PMTK314,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n";
-    static const char query_dgps[] = "$PMTK401*37\r\n";
-    static const char set_dgps[] = "$PMTK301,2*2D\r\n ";
+    //  static const char query_dgps[] = "$PMTK401*37\r\n";
+    static const char set_dgps[] = "$PMTK301,2*2E\r\n ";
+    static const char set_sbas[] = "$PMTK313,1*2E\r\n";
 
     gps__nema(disable_except_gpgga, sizeof(disable_except_gpgga));
     gps__nema(update_rate_10hz, sizeof(update_rate_10hz));
     gps__nema(set_dgps, sizeof(set_dgps));
-    gps__nema(query_dgps, sizeof(query_dgps));
+    gps__nema(set_sbas, sizeof(set_sbas));
 
     // static const char nmea_mode[] = "$PMTK314,0,1,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0*28\r\n";
     // gps__nema(nmea_mode, sizeof(nmea_mode));
@@ -218,7 +219,7 @@ void gps__run_once(void) {
 gps_coordinates_t gps__get_coordinates(void) { return parsed_coordinates; }
 
 void print__gps_coordinates(void) {
-  //  printf("Longitude: %Lf \t Latitude: %Lf\n", parsed_coordinates.longitude, parsed_coordinates.latitude);
+  printf("Longitude: %Lf \t Latitude: %Lf\n", parsed_coordinates.longitude, parsed_coordinates.latitude);
 }
 
 // debug functions

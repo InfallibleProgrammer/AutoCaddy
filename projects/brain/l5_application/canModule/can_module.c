@@ -4,6 +4,7 @@
 #include "can_packet.h"
 #include "delay.h"
 #include "project.h"
+#include <stdio.h>
 
 static void priv_sendVelocityData(void) {
   dbcSetInputVels velocityData;

@@ -8,7 +8,9 @@
 // - This will auto-generate "Mock" versions based on the header file
 #include "Mockble_position.h"
 #include "Mockboard_io.h"
+#include "Mockcan_bus.h"
 #include "Mockcan_bus_initializer.h"
+#include "Mockcan_module.h"
 #include "Mockcompass.h"
 #include "Mockgeo_logic.h"
 #include "Mockgpio.h"
