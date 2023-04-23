@@ -43,6 +43,8 @@ void MotorControl_updateVelocityData(float inputVelocity, motor_axis_e motorSide
 
 void MotorControl_calibrateMotors(motor_axis_e motorSide);
 
+void MotorControl_motorCalibrationSequence(void);
+
 uint8_t MotorControl_getMotorCANID(motor_axis_e motorSide);
 
 bool MotorControl_isMotorCalibrated(motor_axis_e motorSide);

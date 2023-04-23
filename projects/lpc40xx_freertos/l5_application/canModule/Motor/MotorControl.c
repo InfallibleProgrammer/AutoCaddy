@@ -28,6 +28,8 @@ static motor_parameters_e motorControl[NUM_OF_MOTORS] = {
      .motorState_e = 0},
 };
 
+static bool motorSystemCalibrated = false;
+
 void MotorControl_sendVelocityData(motor_axis_e motorSide) {
   dbcSetInputVels velocityData;
   velocityData.Input_Torque_FF = (float)motorControl[motorSide].inputTorque;
@@ -42,7 +44,9 @@ void MotorControl_sendVelocityData(motor_axis_e motorSide) {
 }
 
 void MotorControl_updateVelocityData(float inputVelocity, motor_axis_e motorSide) {
-  motorControl[motorSide].inputSpeed = inputVelocity;
+  if (motorSystemCalibrated == true) {
+    motorControl[motorSide].inputSpeed = inputVelocity;
+  }
 }
 
 void MotorControl_setState(motor_axis_e motorSide, axis_state_e stateValue) {
@@ -84,6 +88,15 @@ void MotorControl_calibrateMotors(motor_axis_e motorSide) {
   }
 }
 
+void MotorControl_motorCalibrationSequence(void) {
+  if (motorControl[MOTOR_0].isCalibrated == false) {
+    MotorControl_calibrateMotors(MOTOR_0);
+  } else if (motorControl[MOTOR_1].isCalibrated == false) {
+    MotorControl_calibrateMotors(MOTOR_1);
+  } else {
+    motorSystemCalibrated = true;
+  }
+}
 uint8_t MotorControl_getMotorCANID(motor_axis_e motorSide) { return motorControl[motorSide].axisCanID; }
 bool MotorControl_isMotorCalibrated(motor_axis_e motorSide) { return motorControl[motorSide].isCalibrated; }
 void MotorControl_init(void) { SoftwareTimer_init(&calibrationTime); }
