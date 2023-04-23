@@ -1,5 +1,4 @@
 #include "can_packet.h"
-static uint32_t axisID[NUM_OF_AXIS] = {0, 1};
 
 dbc_message_header_t dbcEncodeVelocityData(uint8_t bytes[8], const dbcSetInputVels *message) {
   memset(bytes, 0, 8);
@@ -37,9 +36,4 @@ bool dbcDecodeHeartbeat(dbc_Heartbeat_s *message, dbc_message_header_t header, u
 
   message->mia_info.mia_counter = 0;
   return success;
-}
-
-void initCanMotorPackets(uint32_t axis0_ID, uint32_t axis1_ID) {
-  axisID[AXIS_0] = axis0_ID;
-  axisID[AXIS_1] = axis1_ID;
 }

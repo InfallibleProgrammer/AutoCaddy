@@ -1,6 +1,5 @@
 #include "can_module.h"
 #include "MotorControl.h"
-#include "MotorSpeedStatus.h"
 #include "can_bus.h"
 #include "can_packet.h"
 #include "delay.h"
@@ -55,22 +54,20 @@ void can_bus_handler__process_all_received_messages(void) {
     if (can_msg.msg_id & (0x3 << 5)) {
       motorAxisID = MotorControl_getMotorCANID(MOTOR_0);
       if (dbcDecodeHeartbeat(&heartBeatData, header, motorAxisID, can_msg.data.bytes)) {
-        MotorControl_setState(MOTOR_AXIS_0, heartBeatData.Axis_State);
+        MotorControl_setState(MOTOR_0, heartBeatData.Axis_State);
       }
     }
     // Message ID of AXIS1
     if (can_msg.msg_id & (0x1 << 5)) {
       motorAxisID = MotorControl_getMotorCANID(MOTOR_1);
-      if (dbcDecodeHeartbeat(&heartBeatData, header, 0x1, can_msg.data.bytes)) {
-        MotorControl_setState(MOTOR_AXIS_1, heartBeatData.Axis_State);
+      if (dbcDecodeHeartbeat(&heartBeatData, header, motorAxisID, can_msg.data.bytes)) {
+        MotorControl_setState(MOTOR_1, heartBeatData.Axis_State);
       }
     }
   }
 }
 
 void periodic_callbacks_1Hz_Velocity(void) {
-
-  bool axis0State = MotorSpeedStatus_getMotorCurrentState(MOTOR_AXIS_0);
   static uint8_t counter = 0;
   static bool controlMode = false;
   // if (isInitialized == false) {
@@ -86,9 +83,9 @@ void periodic_callbacks_1Hz_Velocity(void) {
   //   priv_sendVelocityData();
   // }
   counter++;
-  if (MotorControl_isMotorCalibrated(AXIS_0) == false && counter >= 5) {
+  if (MotorControl_isMotorCalibrated(MOTOR_0) == false && counter >= 5) {
     printf("NOT CALIBRATED\n");
-    MotorControl_calibrateMotors(AXIS_0);
+    MotorControl_calibrateMotors(MOTOR_0);
   }
 
   // if (getMotorCalibrationStatus() == false) {

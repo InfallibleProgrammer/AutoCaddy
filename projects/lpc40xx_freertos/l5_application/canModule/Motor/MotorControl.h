@@ -9,6 +9,12 @@ typedef enum {
 } motor_axis_e;
 
 typedef enum {
+  INITIAL_CALIBRATION_STATE = 0,
+  ENCODER_CALIBRATION_STAGE = 1,
+  ENCODER_CALIBRATED = 2,
+} motor_calibration_state_e;
+
+typedef enum {
   UNDEFINED = 0,
   IDLE = 1,
   STARTUP_SEQUENCE = 2,
@@ -26,7 +32,7 @@ typedef struct {
   float inputSpeed;
   float inputTorque;
   bool isCalibrated;
-  uint8_t calibrationState;
+  motor_calibration_state_e calibrationState;
   uint8_t axisCanID;
   axis_state_e motorState_e;
 } motor_parameters_e;

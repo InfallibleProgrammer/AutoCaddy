@@ -1,5 +1,4 @@
 #include "MotorControl.h"
-#include "MotorSpeedStatus.h"
 #include "SoftwareTimer.h"
 #include "can_bus.h"
 #include "can_module.h"
@@ -11,12 +10,6 @@
 #define MAX_CALIBRATION_TIME_MS 3000
 
 static software_timer_s calibrationTime;
-
-typedef enum {
-  INITIAL_CALIBRATION_STATE = 0,
-  ENCODER_CALIBRATION_STAGE = 1,
-  ENCODER_CALIBRATED = 2,
-} motor_calibration_state_e;
 
 static motor_parameters_e motorControl[NUM_OF_MOTORS] = {
     {.motorAxisType = MOTOR_0,
@@ -57,13 +50,11 @@ void MotorControl_setState(motor_axis_e motorSide, axis_state_e stateValue) {
 }
 
 void MotorControl_calibrateMotors(motor_axis_e motorSide) {
-  printf("STATE: %i\n", motorControl[motorSide].calibrationState);
   bool timeMet;
   switch (motorControl[motorSide].calibrationState) {
 
   case INITIAL_CALIBRATION_STATE:
     if (motorControl[motorSide].isCalibrated == false && motorControl[motorSide].motorState_e == IDLE) {
-      printf("State0\n");
       dbc_Set_Axis_State_s axisState;
       axisState.Axis_Requested_State = ENCODER_INDEX_SEARCH;
       can__msg_t can_msg = {};
@@ -80,12 +71,10 @@ void MotorControl_calibrateMotors(motor_axis_e motorSide) {
     timeMet = SoftwareTimer_hasTimeExpired(&calibrationTime);
     if ((motorControl[motorSide].motorState_e == ENCODER_INDEX_SEARCH) || (timeMet == true)) {
       motorControl[motorSide].calibrationState++;
-      printf("S1: %x\n", motorControl[motorSide].calibrationState);
     }
     break; /* optional */
 
   case ENCODER_CALIBRATED:
-    printf("State2\n");
     motorControl[motorSide].isCalibrated = true;
     break;
   /* you can have any number of case statements */
