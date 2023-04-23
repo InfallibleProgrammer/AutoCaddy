@@ -2,9 +2,11 @@
 #include "delay.h"
 #include "gpio.h"
 #include "string.h"
+#include <stdio.h>
 
-static uint32_t offset = 0;
-static const uint8_t number_of_reads = 3;
+#define GAIN_SETTING 3
+
+static int32_t offset = 0;
 
 static gpio_s load_sensor__clk_pin = {
     .port_number = 0,
@@ -16,7 +18,7 @@ static gpio_s load_sensor__data_pin = {
     .pin_number = 9,
 };
 
-static uint8_t load_sensor__calculate_filler_byte(uint8_t byte) { return (byte & 0x80) ? 0xFF : 0x00; }
+static uint8_t load_sensor__calculate_filler_byte(int32_t reading) { return (reading & (1 << 23)) ? 0xFF : 0x00; }
 
 static uint8_t load_sensor__read_byte(void) {
   uint8_t value = 0U;
@@ -35,14 +37,28 @@ static uint8_t load_sensor__read_byte(void) {
   return value;
 }
 
-static bool load_sensor__read_bytes(uint8_t *byte_arr) {
+static bool load_sensor__read_bytes(int32_t *sensor_value) {
   bool weight_read = false;
-  memset(byte_arr, 0, 3); // set byte arr to zero.
+  *sensor_value = 0;
   if (load_sensor__is_ready()) {
     weight_read = true;
-    for (uint8_t count = 1; count <= number_of_reads; ++count) {
-      byte_arr[number_of_reads - count] = load_sensor__read_byte();
+    gpio__reset(load_sensor__clk_pin);
+    for (uint8_t count = 1; count <= 24; ++count) {
+      gpio__set(load_sensor__clk_pin);
+      delay__us(1);
+      bool val = gpio__get(load_sensor__data_pin);
+      if (val) {
+        *sensor_value |= (1 << (24 - count));
+      }
+      gpio__reset(load_sensor__clk_pin);
+      delay__us(1);
     }
+    // for (uint8_t pulse_count = 0; pulse_count < GAIN_SETTING; ++pulse_count) {
+    //   gpio__set(load_sensor__clk_pin);
+    //   delay__us(1);
+    //   gpio__reset(load_sensor__clk_pin);
+    //   delay__us(1);
+    // }
   }
   return weight_read;
 }
@@ -59,24 +75,30 @@ void load_sensor__init(void) {
 
 void load_sensor__calibrate(void) {
   // calibrate sensor according to offset to get 'zero' weight
-  uint8_t byte_arr[3U] = {0U};
   // wait for sensor to be ready
   while (!load_sensor__is_ready())
     ;
-  const uint8_t filler_byte = load_sensor__calculate_filler_byte(byte_arr[2]);
-  offset = 0U;
-  offset = (filler_byte << 24) | (byte_arr[2] << 16) | (byte_arr[1] << 8) | (byte_arr[0]);
-  printf("offset: %lu\n", offset);
+  int32_t sensor_offset = 0;
+  // set initial gain
+  gpio__reset(load_sensor__clk_pin);
+  for (uint8_t gain_pulse = 0U; gain_pulse < GAIN_SETTING; ++gain_pulse) {
+    delay__us(1);
+    gpio__set(load_sensor__clk_pin);
+    delay__us(1);
+    gpio__reset(load_sensor__clk_pin);
+  }
+  (void)load_sensor__read(&sensor_offset);
+  const uint8_t filler_byte = load_sensor__calculate_filler_byte(sensor_offset);
+  offset = sensor_offset;
+  printf("offset: %i\n", offset);
 }
 
-int32_t load_sensor__read(void) {
-  uint8_t byte_arr[3U] = {0U};
-  int32_t value = 0;
-  if (load_sensor__read_bytes(byte_arr)) {
-    const uint8_t filler_byte = load_sensor__calculate_filler_byte(byte_arr[2]);
-    value =
-        (int8_t)(filler_byte << 24) | (int8_t)(byte_arr[2] << 16) | (int8_t)(byte_arr[1] << 8) | (int8_t)(byte_arr[0]);
-    value -= (int32_t)offset;
+bool load_sensor__read(int32_t *sensor_reading) {
+  bool valid_reading = false;
+  if (load_sensor__read_bytes(sensor_reading)) {
+    valid_reading = true;
+    const uint8_t filler_byte = load_sensor__calculate_filler_byte(*sensor_reading);
+    *sensor_reading -= offset;
   }
-  return value;
+  return valid_reading;
 }
