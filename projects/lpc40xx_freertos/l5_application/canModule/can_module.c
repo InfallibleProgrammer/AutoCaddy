@@ -1,4 +1,5 @@
 #include "can_module.h"
+#include "MotorControl.h"
 #include "MotorSpeedStatus.h"
 #include "can_bus.h"
 #include "can_packet.h"
@@ -43,30 +44,25 @@ static uint16_t value;
 void can_bus_handler__process_all_received_messages(void) {
   can__msg_t can_msg = {0};
   dbc_Heartbeat_s heartBeatData = {};
+  uint8_t motorAxisID;
   // Receive all messages
   while (can__rx(can1, &can_msg, 5)) {
     const dbc_message_header_t header = {
         .message_id = can_msg.msg_id,
         .message_dlc = can_msg.frame_fields.data_len,
     };
-    dbc_message_header_t *headerPtr = &header;
-    // printf("MiD: %i", header.message_id);
     // Message ID of AXIS0
     if (can_msg.msg_id & (0x3 << 5)) {
-      printf("\nID: %i", header.message_id);
-      headerPtr->message_id = headerPtr->message_id & ~(0x3 << 5);
-      printf("\tID: %i\n", header.message_id);
-      if (dbc_decode_Heartbeat(&heartBeatData, header, can_msg.data.bytes)) {
-        MotorSpeedStatus_setMotorCurrentState(MOTOR_AXIS_0, heartBeatData.Axis_State);
-        printf("HEARTBEAT: %x\n", heartBeatData.Axis_State);
+      motorAxisID = MotorControl_getMotorCANID(MOTOR_0);
+      if (dbcDecodeHeartbeat(&heartBeatData, header, motorAxisID, can_msg.data.bytes)) {
+        MotorControl_setState(MOTOR_AXIS_0, heartBeatData.Axis_State);
       }
     }
     // Message ID of AXIS1
     if (can_msg.msg_id & (0x1 << 5)) {
-      headerPtr->message_id = headerPtr->message_id & ~(0x3 << 5);
-      if (dbc_decode_Heartbeat(&heartBeatData, header, can_msg.data.bytes)) {
-        MotorSpeedStatus_setMotorCurrentState(MOTOR_AXIS_1, heartBeatData.Axis_State);
-        // printf("%x", heartBeatData.Axis_State);
+      motorAxisID = MotorControl_getMotorCANID(MOTOR_1);
+      if (dbcDecodeHeartbeat(&heartBeatData, header, 0x1, can_msg.data.bytes)) {
+        MotorControl_setState(MOTOR_AXIS_1, heartBeatData.Axis_State);
       }
     }
   }
@@ -75,8 +71,8 @@ void can_bus_handler__process_all_received_messages(void) {
 void periodic_callbacks_1Hz_Velocity(void) {
 
   bool axis0State = MotorSpeedStatus_getMotorCurrentState(MOTOR_AXIS_0);
+  static uint8_t counter = 0;
   static bool controlMode = false;
-  printf("%i\n", value);
   // if (isInitialized == false) {
   //   priv_sendCalibrationData();
   //   isInitialized = true;
@@ -89,21 +85,27 @@ void periodic_callbacks_1Hz_Velocity(void) {
   // if (isInitialized && controlMode && axis0State != 4 && axis0State != 7) {
   //   priv_sendVelocityData();
   // }
-  if (getMotorCalibrationStatus() == false) {
-    delay__ms(900);
-    motorCalibrationSequence();
-  } else {
-    if (controlMode == false) {
-      delay__ms(500);
-      priv_enableCloseLoopControl();
-      printf("CONTROL MODE set\n\n\n");
-      controlMode = true;
-    }
-    if (controlMode) {
-      printf("VELOCITY set\n\n\n");
-      priv_sendVelocityData();
-    }
+  counter++;
+  if (MotorControl_isMotorCalibrated(AXIS_0) == false && counter >= 5) {
+    printf("NOT CALIBRATED\n");
+    MotorControl_calibrateMotors(AXIS_0);
   }
+
+  // if (getMotorCalibrationStatus() == false) {
+  //   // delay__ms(900);
+  //   // motorCalibrationSequence();
+  // } else {
+  //   if (controlMode == false) {
+  //     delay__ms(500);
+  //     priv_enableCloseLoopControl();
+  //     printf("CONTROL MODE set\n\n\n");
+  //     controlMode = true;
+  //   }
+  //   if (controlMode) {
+  //     printf("VELOCITY set\n\n\n");
+  //     priv_sendVelocityData();
+  //   }
+  // }
 }
 
 //   void periodic_callbacks_10Hz_GEO_commands(void) {}

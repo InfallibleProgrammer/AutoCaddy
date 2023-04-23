@@ -26,9 +26,9 @@ typedef struct {
   float inputSpeed;
   float inputTorque;
   bool isCalibrated;
-  bool calibrationState;
+  uint8_t calibrationState;
   uint8_t axisCanID;
-  uint8_t motorState_e;
+  axis_state_e motorState_e;
 } motor_parameters_e;
 
 void MotorControl_sendVelocityData(motor_axis_e motorSide);
@@ -36,3 +36,11 @@ void MotorControl_sendVelocityData(motor_axis_e motorSide);
 void MotorControl_updateVelocityData(float inputVelocity, motor_axis_e motorSide);
 
 void MotorControl_calibrateMotors(motor_axis_e motorSide);
+
+uint8_t MotorControl_getMotorCANID(motor_axis_e motorSide);
+
+bool MotorControl_isMotorCalibrated(motor_axis_e motorSide);
+
+void MotorControl_setState(motor_axis_e motorSide, axis_state_e stateValue);
+
+void MotorControl_init(void);
