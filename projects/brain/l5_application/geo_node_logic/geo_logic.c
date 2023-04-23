@@ -79,15 +79,15 @@ static float calculate_distance_rc_car_to_destination_in_meters(gps_coordinates_
 }
 */  // OLD IMPLEMENTATION
 
-static long double calculate_distance_rc_car_to_destination_in_meters(void) {
+static double calculate_distance_rc_car_to_destination_in_meters(void) {
   const int Earth_Radius_in_km = 6371;
-  const long double delta_lat = (current_RC_CAR_location.GPS_CURRENT_LAT - phone_location.latitude) * (PI / 180.0f);
-  const long double delta_long = (current_RC_CAR_location.GPS_CURRENT_LONG - phone_location.longitutde) * (PI / 180.0f);
-  long double a = pow(sin(delta_lat / 2), 2) + cos(phone_location.latitude * (PI / 180.0f)) *
-                                                   cos(current_RC_CAR_location.GPS_CURRENT_LAT * (PI / 180.0f)) *
-                                                   pow(sin(delta_long / 2), 2);
-  long double c = 2 * atan2f(sqrt(a), sqrt(1 - a));
-  long double distance = (Earth_Radius_in_km * c * 1000);
+  const double delta_lat = (current_RC_CAR_location.GPS_CURRENT_LAT - phone_location.latitude) * (PI / 180.0f);
+  const double delta_long = (current_RC_CAR_location.GPS_CURRENT_LONG - phone_location.longitutde) * (PI / 180.0f);
+  double a = pow(sin(delta_lat / 2), 2) + cos(phone_location.latitude * (PI / 180.0f)) *
+                                              cos(current_RC_CAR_location.GPS_CURRENT_LAT * (PI / 180.0f)) *
+                                              pow(sin(delta_long / 2), 2);
+  double c = 2 * atan2f(sqrt(a), sqrt(1 - a));
+  double distance = (Earth_Radius_in_km * c * 1000);
   printf("Distance: %f\n", distance);
   return (Earth_Radius_in_km * c * 1000);
 }
@@ -140,11 +140,15 @@ dbc_COMPASS_HEADING_DISTANCE_s determine_compass_heading_and_distance(void) {
   gps_coordinates_t gps_peripheral_data;
   gps_peripheral_data = gps__get_coordinates();
   current_destination_information.CURRENT_HEADING = compass__run_once_get_heading();
-  current_destination_information.DESTINATION_HEADING = calculate_destination_bearing();
+  const float gps_bearing = calculate_destination_bearing();
+  current_destination_information.DESTINATION_HEADING = gps_bearing - current_destination_information.CURRENT_HEADING;
   // current_destination_information.DESTINATION_HEADING = get_current_bearing();
   current_destination_information.DISTANCE = calculate_distance_rc_car_to_destination_in_meters();
-  // printf("Destination bearing: %f\n", current_destination_information.DESTINATION_HEADING);
-  // printf("Destination distance in meters: %f\n", current_destination_information.DISTANCE);
+  printf("Current heading: %f\n", current_destination_information.CURRENT_HEADING);
+  printf("Destination bearing: %f\n", current_destination_information.DESTINATION_HEADING);
+  printf("Destination distance in meters: %f\n", current_destination_information.DISTANCE);
+  printf("GPS: Longitude: %f \t Latitude: %f\n", gps_peripheral_data.longitude, gps_peripheral_data.latitude);
+  printf("PHONE: Longitude: %f \t Latitude: %f\n", phone_location.longitutde, phone_location.latitude);
   return current_destination_information;
 }
 

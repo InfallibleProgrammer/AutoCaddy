@@ -4,6 +4,7 @@
 #include "can_bus_initializer.h"
 #include "can_module.h"
 #include "compass.h"
+#include "compass_calibrate.h"
 #include "geo_logic.h"
 #include "gpio.h"
 #include "gps.h"
@@ -29,41 +30,31 @@ void periodic_callbacks__initialize(void) {
 }
 
 void periodic_callbacks__1Hz(uint32_t callback_count) {
-  // gpio__toggle(board_io__get_led0());
-  //  gps__setup_command_registers();
-  // periodic_callbacks_1Hz_Velocity();
-  // can_bus_handler__process_all_received_messages();
+  gpio__toggle(board_io__get_led0());
   gps__setup_command_registers();
-  // Add your code here
+  // COMPASS_CAL_1Hz();
 }
 
 void periodic_callbacks__10Hz(uint32_t callback_count) {
 
-  // gpio__toggle(board_io__get_led1());
-  // gps__setup_command_registers();
+  gpio__toggle(board_io__get_led1());
   gps__run_once();
-  // compass__run_once();
+  compass__run_once();
 
-  /*
-    if (ble_position__periodic(&cellular_coordinates)) {
-      const dbc_GPS_CURRENT_INFO_s current_RC_location = geo_controller_process_GEO_current_location();
-      //  printf("phone longitude: %f\n", cellular_coordinates.longitutde);
-      //  printf("phone latitude: %f\n", cellular_coordinates.latitude);
-      set_phone_location(cellular_coordinates);
-      // const dbc_COMPASS_HEADING_DISTANCE_s current_compass_data = determine_compass_heading_and_distance();
+  if (ble_position__periodic(&cellular_coordinates)) {
+    const dbc_GPS_CURRENT_INFO_s current_RC_location = geo_controller_process_GEO_current_location();
+    printf("phone longitude: %f\n", cellular_coordinates.longitutde);
+    printf("phone latitude: %f\n", cellular_coordinates.latitude);
+    set_phone_location(cellular_coordinates);
+    const dbc_COMPASS_HEADING_DISTANCE_s current_compass_data = determine_compass_heading_and_distance();
 
-      // send current destination information
-      dbc_COMPASS_HEADING_DISTANCE_s current_compass_data = {
-          .CURRENT_HEADING = 333.3, .DESTINATION_HEADING = 222.2, .DISTANCE = 5};
-
-      can__msg_t can_msg = {};
-      const dbc_message_header_t heading_and_distance_information =
-          dbc_encode_COMPASS_HEADING_DISTANCE(can_msg.data.bytes, &current_compass_data);
-      can_msg.msg_id = heading_and_distance_information.message_id;
-      can_msg.frame_fields.data_len = heading_and_distance_information.message_dlc;
-      can__tx(can1, &can_msg, 0);
-    }
-    */
+    can__msg_t can_msg = {};
+    const dbc_message_header_t heading_and_distance_information =
+        dbc_encode_COMPASS_HEADING_DISTANCE(can_msg.data.bytes, &current_compass_data);
+    can_msg.msg_id = heading_and_distance_information.message_id;
+    can_msg.frame_fields.data_len = heading_and_distance_information.message_dlc;
+    can__tx(can1, &can_msg, 0);
+  }
   // Add your code here
 }
 

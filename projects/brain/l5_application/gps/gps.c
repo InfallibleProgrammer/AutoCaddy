@@ -94,7 +94,7 @@ static void gps_convert_string_to_longitude() {
 static bool gps__check_if__complete_GPGGA_string(char *uart_data) {
   int count = 0;
   char c = ',';
-  printf("%s\n", uart_data);
+  // printf("%s\n", uart_data);
   for (int i = 0; i < strlen(uart_data); i++) {
     if (uart_data[i] == c) {
       count++;
