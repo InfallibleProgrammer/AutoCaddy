@@ -74,7 +74,7 @@ void MotorControl_calibrateMotors(motor_axis_e motorSide) {
   case ENCODER_CALIBRATION_STAGE:
     timeMet = SoftwareTimer_hasTimeExpired(&calibrationTime);
     if ((motorControl[motorSide].motorState_e == ENCODER_INDEX_SEARCH) || (timeMet == true)) {
-      motorControl[motorSide].calibrationState++;
+      motorControl[motorSide].calibrationState = ENCODER_CALIBRATED
     }
     break; /* optional */
 
