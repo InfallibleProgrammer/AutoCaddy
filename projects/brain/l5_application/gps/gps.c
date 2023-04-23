@@ -16,6 +16,7 @@
 #include "delay.h"
 #include "gpio.h"
 #include "line_buffer.h"
+#include "lpc_peripherals.h"
 #include "queue.h"
 #include "uart.h"
 
@@ -50,6 +51,9 @@ static uart_e gps_uart = UART__2;
 static gps_coordinates_t parsed_coordinates;
 static gpio_s gps_fix = {0, 6};
 // static bool gps_lock_status;
+
+static bool is_setup = false;
+static bool baud_changed = false;
 
 /***********************************************************************************************************************
  *
@@ -90,6 +94,7 @@ static void gps_convert_string_to_longitude() {
 static bool gps__check_if__complete_GPGGA_string(char *uart_data) {
   int count = 0;
   char c = ',';
+  printf("%s\n", uart_data);
   for (int i = 0; i < strlen(uart_data); i++) {
     if (uart_data[i] == c) {
       count++;
@@ -153,7 +158,8 @@ void gps__init(void) {
   gpio__set_as_input(gps_fix);
 
   uart__init(gps_uart, clock__get_peripheral_clock_hz(), 9600);
-  QueueHandle_t rxq_handle = xQueueCreate(1024, sizeof(char));
+
+  QueueHandle_t rxq_handle = xQueueCreate(2048, sizeof(char));
   QueueHandle_t txq_handle = xQueueCreate(512, sizeof(char));
   uart__enable_queues(gps_uart, rxq_handle, txq_handle);
 
@@ -163,11 +169,21 @@ void gps__init(void) {
 }
 
 void gps__setup_command_registers(void) {
-  static bool is_setup = false;
-  if (is_setup == false) {
+  if (!baud_changed) {
+    static const char baud_rate[] = "$PMTK251,38400*27\r\n";
+    gps__nema(baud_rate, sizeof(baud_rate));
+    delay__ms(500);
+    lpc_peripheral__turn_off_power_to(LPC_PERIPHERAL__UART2);
+    uart__init(gps_uart, clock__get_peripheral_clock_hz(), 38400);
+    baud_changed = true;
+  }
+
+  if ((is_setup == false) && baud_changed) {
+    static const char baud_ack[] = "$PMTK001,251,3*36\r\n";
+    char buf[128];
     static const char update_rate_10hz[] = "$PMTK220,100*2F\r\n";
     static const char disable_except_gpgga[] = "$PMTK314,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n";
-    //  static const char query_dgps[] = "$PMTK401*37\r\n";
+    static const char query_dgps[] = "$PMTK401*37\r\n";
     static const char set_dgps[] = "$PMTK301,2*2E\r\n ";
     static const char set_sbas[] = "$PMTK313,1*2E\r\n";
 
@@ -175,9 +191,6 @@ void gps__setup_command_registers(void) {
     gps__nema(update_rate_10hz, sizeof(update_rate_10hz));
     gps__nema(set_dgps, sizeof(set_dgps));
     gps__nema(set_sbas, sizeof(set_sbas));
-
-    // static const char nmea_mode[] = "$PMTK314,0,1,0,1,1,1,1,1,0,0,0,0,0,0,0,0,0,0,0*28\r\n";
-    // gps__nema(nmea_mode, sizeof(nmea_mode));
     is_setup = true;
   }
 }
@@ -208,7 +221,7 @@ bool gps_is_fixed(void) {
 
 void gps__run_once(void) {
   gpio__set(board_io__get_led3());
-  if (gps_is_fixed()) {
+  if (gps_is_fixed() && is_setup) {
     gpio__reset(board_io__get_led3());
     gps__transfer_data_from_uart_driver_to_line_buffer();
     gps__parse_coordinates_from_line();
@@ -219,7 +232,7 @@ void gps__run_once(void) {
 gps_coordinates_t gps__get_coordinates(void) { return parsed_coordinates; }
 
 void print__gps_coordinates(void) {
-  printf("Longitude: %Lf \t Latitude: %Lf\n", parsed_coordinates.longitude, parsed_coordinates.latitude);
+  printf("Longitude: %f \t Latitude: %f\n", parsed_coordinates.longitude, parsed_coordinates.latitude);
 }
 
 // debug functions

@@ -24,12 +24,7 @@ void periodic_callbacks__initialize(void) {
   // This method is invoked once when the periodic tasks are created
   compass__init();
   gps__init();
-  if (can_bus_initializer()) {
-    puts("dropout\n");
-  } else {
-    puts("dafuq\n");
-  }
-  // initCanMotorPackets(AXIS_0_ID, AXIS_1_ID);
+  can_bus_initializer();
   ble_position__init();
 }
 
@@ -38,15 +33,16 @@ void periodic_callbacks__1Hz(uint32_t callback_count) {
   //  gps__setup_command_registers();
   // periodic_callbacks_1Hz_Velocity();
   // can_bus_handler__process_all_received_messages();
+  gps__setup_command_registers();
   // Add your code here
 }
 
 void periodic_callbacks__10Hz(uint32_t callback_count) {
 
   // gpio__toggle(board_io__get_led1());
-  gps__setup_command_registers();
+  // gps__setup_command_registers();
   gps__run_once();
-  compass__run_once();
+  // compass__run_once();
 
   /*
     if (ble_position__periodic(&cellular_coordinates)) {
