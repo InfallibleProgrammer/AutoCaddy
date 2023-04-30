@@ -124,11 +124,9 @@ BO_ 27 Set_Vel_gains: 8 MOTOR
  SG_ Vel_Integrator_Gain : 32|32@1+ (1,0) [0|0] "" ODRIVE
  SG_ Vel_Gain : 0|32@1+ (1,0) [0|0] "" ODRIVE
 
-
-
-
-
-
+BO_ 28 Motor_SpeedLog: 8 MOTOR
+ SG_ MotorSpeed0_rpm : 0|32@1+ (1e-06,0) [-2147.483648|5] ""  BRAIN
+ SG_ MotorSpeed1_rpm : 32|32@1+ (1e-06,0) [-2147.483648|5] ""  BRAIN
 
 
 
