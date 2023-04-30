@@ -12,19 +12,19 @@ interpolation_point_xy distance_lookupTable[5] = {
     },
     {
         .x = 10,
-        .y = 1.5,
+        .y = 0.5,
     },
     {
         .x = 20,
-        .y = 2.5,
+        .y = 1.5,
     },
     {
         .x = 30,
-        .y = 3.5,
+        .y = 2.5,
     },
     {
         .x = 50,
-        .y = 5,
+        .y = 3,
     },
 
 };
@@ -36,13 +36,13 @@ void updateMotorValues(float bearing, float distance) {
   // left motor changes
   if (bearing >= 0 && bearing <= 180) {
     motorSpeed = bearing * PERCENTAGE_UNIT_PER_DEGREE * optimalMotorSpeed;
-    MotorControl_updateVelocityData(MOTOR_0, motorSpeed);
+    MotorControl_updateVelocityData(MOTOR_0, -motorSpeed);
     MotorControl_updateVelocityData(MOTOR_1, optimalMotorSpeed);
   }
   // right motor changes
   else if (bearing > 180 && bearing <= 360) {
     motorSpeed = (bearing - 180.0) * PERCENTAGE_UNIT_PER_DEGREE * optimalMotorSpeed;
     MotorControl_updateVelocityData(MOTOR_1, motorSpeed);
-    MotorControl_updateVelocityData(MOTOR_0, optimalMotorSpeed);
+    MotorControl_updateVelocityData(MOTOR_0, -optimalMotorSpeed);
   }
 }
