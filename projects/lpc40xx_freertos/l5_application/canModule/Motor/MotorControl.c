@@ -74,7 +74,7 @@ void MotorControl_calibrateMotors(motor_axis_e motorSide) {
   case ENCODER_CALIBRATION_STAGE:
     timeMet = SoftwareTimer_hasTimeExpired(&calibrationTime);
     if ((motorControl[motorSide].motorState_e == ENCODER_INDEX_SEARCH) || (timeMet == true)) {
-      motorControl[motorSide].calibrationState = ENCODER_CALIBRATED
+      motorControl[motorSide].calibrationState = ENCODER_CALIBRATED;
     }
     break; /* optional */
 
@@ -100,3 +100,5 @@ void MotorControl_motorCalibrationSequence(void) {
 uint8_t MotorControl_getMotorCANID(motor_axis_e motorSide) { return motorControl[motorSide].axisCanID; }
 bool MotorControl_isMotorCalibrated(motor_axis_e motorSide) { return motorControl[motorSide].isCalibrated; }
 void MotorControl_init(void) { SoftwareTimer_init(&calibrationTime); }
+
+float MotorControl_getMotorSpeed(motor_axis_e motorSide) { return motorControl[motorSide].inputSpeed; }

@@ -21,6 +21,7 @@ void periodic_callbacks__initialize(void) {
   can_bus_initializer();
   // initCanMotorPackets(AXIS_0_ID, AXIS_1_ID);
   ble_position__init();
+  MotorControl_init();
 }
 
 void periodic_callbacks__1Hz(uint32_t callback_count) {
@@ -28,11 +29,14 @@ void periodic_callbacks__1Hz(uint32_t callback_count) {
 
   periodic_callbacks_1Hz_Velocity();
   can_bus_handler__process_all_received_messages();
+  MotorControl_motorCalibrationSequence();
+  periodic_callbacks_1Hz_sendspeed();
   // Add your code here
 }
 
 void periodic_callbacks__10Hz(uint32_t callback_count) {
   gpio__toggle(board_io__get_led1());
+  updateMotorValues(); // update values for the motors
   // Add your code here
   (void)ble_position__periodic(&cellular_coordinates);
 }

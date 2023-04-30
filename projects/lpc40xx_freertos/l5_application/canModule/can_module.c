@@ -68,11 +68,17 @@ void can_bus_handler__process_all_received_messages(void) {
 }
 
 void periodic_callbacks_1Hz_Velocity(void) {
-  static uint8_t counter = 0;
-  static bool controlMode = false;
-  counter++;
-  if (MotorControl_isMotorCalibrated(MOTOR_0) == false && counter >= 5) {
-    printf("NOT CALIBRATED\n");
-    MotorControl_calibrateMotors(MOTOR_0);
-  }
+  MotorControl_sendVelocityData(MOTOR_0);
+  MotorControl_sendVelocityData(MOTOR_1);
+}
+
+void periodic_callbacks_1Hz_sendspeed(void) {
+  can__msg_t can_msg = {};
+  dbc_Motor_SpeedLog_s motorSpeed;
+  motorSpeed.MotorSpeed0_rpm = MotorControl_getMotorSpeed(MOTOR_0);
+  motorSpeed.MotorSpeed0_rpm = MotorControl_getMotorSpeed(MOTOR_1);
+  const dbc_message_header_t canMsgData = dbc_encode_Motor_SpeedLog(can_msg.data.bytes, &motorSpeed);
+  can_msg.msg_id = canMsgData.message_id;
+  can_msg.frame_fields.data_len = canMsgData.message_dlc;
+  can__tx(can1, &can_msg, 0);
 }
