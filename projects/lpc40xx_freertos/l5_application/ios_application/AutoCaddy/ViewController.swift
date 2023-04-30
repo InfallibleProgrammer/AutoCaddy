@@ -31,6 +31,8 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         bluetoothManager = CBCentralManager.init(delegate: self, queue: nil)
+        locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
+        locationManager.activityType = CLActivityType.otherNavigation
         if(transmit_location) {
             startButton.setTitle("Transmitting Location...", for: .normal)
         } else {
@@ -39,6 +41,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         if(bluetooth_is_connected) {
             statusLabel.text = "Connected to AutoCaddy!"
         } else {
+            
             statusLabel.text = "Searching for AutoCaddy..."
         }
     }
@@ -46,7 +49,7 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         locationManager.delegate = self
-        locationManager.desiredAccuracy = kCLLocationAccuracyBest
+        locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
         locationManager.requestWhenInUseAuthorization()
         locationManager.startUpdatingLocation()
     }
@@ -68,11 +71,13 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
             guard let data = longitude.data(using: String.Encoding.utf8) else { return }
             sendOverBLE(withValue: data)
             let latitude = String(first.coordinate.latitude) + ","
-            let latitude_string = "Latitude:"
+            let latitude_string = "Latitude:"                               
             guard let data = latitude_string.data(using: String.Encoding.utf8) else { return }
             sendOverBLE(withValue: data)
             guard let data = latitude.data(using: String.Encoding.utf8) else { return }
             sendOverBLE(withValue: data)
+            print("latitude: " + String(first.coordinate.latitude))
+            print("longitude: " + String(first.coordinate.longitude))
         }
     }
     
