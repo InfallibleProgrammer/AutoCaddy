@@ -52,3 +52,5 @@ bool MotorControl_isMotorCalibrated(motor_axis_e motorSide);
 void MotorControl_setState(motor_axis_e motorSide, axis_state_e stateValue);
 
 void MotorControl_init(void);
+
+float MotorControl_getMotorSpeed(motor_axis_e motorSide);
