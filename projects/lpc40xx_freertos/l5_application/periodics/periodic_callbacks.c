@@ -21,11 +21,10 @@ void periodic_callbacks__initialize(void) {
 
 void periodic_callbacks__1Hz(uint32_t callback_count) {
   // gpio__toggle(board_io__get_led0());
-
-  periodic_callbacks_1Hz_Velocity();
   can_bus_handler__process_all_received_messages();
+  periodic_callbacks_1Hz_Velocity();
   MotorControl_motorCalibrationSequence();
-  // periodic_callbacks_1Hz_sendspeed();
+  periodic_callbacks_1Hz_sendspeed();
   // Add your code here
 }
 

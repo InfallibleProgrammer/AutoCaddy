@@ -58,7 +58,6 @@ void can_bus_handler__process_all_received_messages(void) {
     }
     // Message ID of AXIS1
     if (can_msg.msg_id & (motorAxisID << 5)) {
-      printf("MOTOR1");
       motorAxisID = MotorControl_getMotorCANID(MOTOR_1);
       if (dbcDecodeHeartbeat(&heartBeatData, header, motorAxisID, can_msg.data.bytes)) {
         MotorControl_setState(MOTOR_1, heartBeatData.Axis_State);
