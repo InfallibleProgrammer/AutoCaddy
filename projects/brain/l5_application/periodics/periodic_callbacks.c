@@ -43,10 +43,23 @@ void periodic_callbacks__10Hz(uint32_t callback_count) {
 
   if (ble_position__periodic(&cellular_coordinates)) {
     const dbc_GPS_CURRENT_INFO_s current_RC_location = geo_controller_process_GEO_current_location();
-    printf("phone longitude: %f\n", cellular_coordinates.longitutde);
-    printf("phone latitude: %f\n", cellular_coordinates.latitude);
-    set_phone_location(cellular_coordinates);
-    const dbc_COMPASS_HEADING_DISTANCE_s current_compass_data = determine_compass_heading_and_distance();
+    // printf("phone longitude: %f\n", cellular_coordinates.longitutde);
+    // printf("phone latitude: %f\n", cellular_coordinates.latitude);
+
+    dbc_COMPASS_HEADING_DISTANCE_s current_compass_data = {0U};
+
+    if (cellular_coordinates.keyword == LONGITUDE) {
+      set_phone_location(cellular_coordinates);
+      current_compass_data = determine_compass_heading_and_distance();
+    } else if (cellular_coordinates.keyword == STOP) {
+      current_compass_data.DESTINATION_HEADING = 0;
+      current_compass_data.DISTANCE = 0;
+    } else if (cellular_coordinates.keyword == DISTANCE) {
+      current_compass_data.DESTINATION_HEADING = cellular_coordinates.bearing;
+      current_compass_data.DISTANCE = cellular_coordinates.distance;
+    }
+
+    printf("BEARING: %f, DISTANCE: %f\n", current_compass_data.DESTINATION_HEADING, current_compass_data.DISTANCE);
 
     can__msg_t can_msg = {};
     const dbc_message_header_t heading_and_distance_information =

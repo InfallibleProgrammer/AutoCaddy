@@ -7,6 +7,8 @@
 typedef enum {
   LONGITUDE = 0,
   LATITUDE,
+  DISTANCE,
+  BEARING,
   STOP,
   KEYWORD_COUNT,
 } keyword_e;
@@ -14,6 +16,9 @@ typedef enum {
 typedef struct {
   long double latitude;
   long double longitutde;
+  long double distance;
+  long double bearing;
+  keyword_e keyword;
 } coordinate_s;
 
 void ble_position__init(void);
