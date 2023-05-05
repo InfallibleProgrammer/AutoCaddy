@@ -29,7 +29,7 @@ static motor_parameters_e motorControl[NUM_OF_MOTORS] = {
      .motorState_e = 0},
 };
 
-static bool motorSystemCalibrated = true;
+static bool motorSystemCalibrated = false;
 
 void MotorControl_sendVelocityData(motor_axis_e motorSide) {
   dbcSetInputVels velocityData;
@@ -76,6 +76,13 @@ void MotorControl_calibrateMotors(motor_axis_e motorSide) {
     if ((motorControl[motorSide].motorState_e == ENCODER_INDEX_SEARCH) || (timeMet == true)) {
 
       motorControl[motorSide].calibrationState = ENCODER_CALIBRATED;
+      dbc_Set_Axis_State_s axisState;
+      axisState.Axis_Requested_State = CLOSED_LOOP_CONTROL;
+      can__msg_t can_msg = {};
+      const dbc_message_header_t canMsgData = dbc_encode_Set_Axis_State(can_msg.data.bytes, &axisState);
+      can_msg.msg_id = canMsgData.message_id | (motorControl[motorSide].axisCanID << MOTOR_CAN_ID_BIT_POSITION);
+      can_msg.frame_fields.data_len = canMsgData.message_dlc;
+      can__tx(can1, &can_msg, 0);
     }
     break; /* optional */
 
