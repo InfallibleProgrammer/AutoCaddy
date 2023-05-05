@@ -1,5 +1,6 @@
 #include "can_module.h"
 #include "MotorControl.h"
+#include "MotorLogic.h"
 #include "can_bus.h"
 #include "can_packet.h"
 #include "delay.h"
@@ -42,6 +43,7 @@ static uint16_t value;
 void can_bus_handler__process_all_received_messages(void) {
   can__msg_t can_msg = {0};
   dbc_Heartbeat_s heartBeatData = {};
+  dbc_COMPASS_HEADING_DISTANCE_s gpsData = {};
   uint8_t motorAxisID;
   // Receive all messages
   while (can__rx(can1, &can_msg, 5)) {
@@ -62,6 +64,9 @@ void can_bus_handler__process_all_received_messages(void) {
       if (dbcDecodeHeartbeat(&heartBeatData, header, motorAxisID, can_msg.data.bytes)) {
         MotorControl_setState(MOTOR_1, heartBeatData.Axis_State);
       }
+    }
+    if (dbc_decode_COMPASS_HEADING_DISTANCE(&gpsData, header, can_msg.data.bytes)) {
+      updateMotorValues(gpsData.DESTINATION_HEADING, gpsData.DISTANCE);
     }
   }
 }
