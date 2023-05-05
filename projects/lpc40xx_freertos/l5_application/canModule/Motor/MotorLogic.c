@@ -5,7 +5,7 @@
 #define PERCENTAGE_UNIT_PER_DEGREE .005555f // 100 percent/ 180 degree max / 100 percent to decimal
 
 static float optimalMotorSpeed = 0;
-interpolation_point_xy distance_lookupTable[5] = {
+static interpolation_point_xy distance_lookupTable[5] = {
     {
         .x = 0,
         .y = 0,
@@ -34,7 +34,7 @@ void updateMotorValues(float bearing, float distance) {
   static float motorSpeed;
   //
   // left motor changes
-  if (bearing >= 0 && bearing <= 180) {
+  if (bearing >= 0.00f && bearing <= 180.0f) {
     motorSpeed = bearing * PERCENTAGE_UNIT_PER_DEGREE * optimalMotorSpeed;
     MotorControl_updateVelocityData(MOTOR_0, -motorSpeed);
     MotorControl_updateVelocityData(MOTOR_1, optimalMotorSpeed);
@@ -46,3 +46,5 @@ void updateMotorValues(float bearing, float distance) {
     MotorControl_updateVelocityData(MOTOR_0, -optimalMotorSpeed);
   }
 }
+
+void print_speed(void) { printf("\tS: %f\n", optimalMotorSpeed); }

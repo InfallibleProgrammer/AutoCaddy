@@ -29,7 +29,7 @@ static motor_parameters_e motorControl[NUM_OF_MOTORS] = {
      .motorState_e = 0},
 };
 
-static bool motorSystemCalibrated = false;
+static bool motorSystemCalibrated = true;
 
 void MotorControl_sendVelocityData(motor_axis_e motorSide) {
   dbcSetInputVels velocityData;
@@ -44,7 +44,7 @@ void MotorControl_sendVelocityData(motor_axis_e motorSide) {
   can__tx(can1, &can_msg, 0);
 }
 
-void MotorControl_updateVelocityData(float inputVelocity, motor_axis_e motorSide) {
+void MotorControl_updateVelocityData(motor_axis_e motorSide, float inputVelocity) {
   if (motorSystemCalibrated == true) {
     motorControl[motorSide].inputSpeed = inputVelocity;
   }
@@ -55,7 +55,6 @@ void MotorControl_setState(motor_axis_e motorSide, axis_state_e stateValue) {
 }
 
 void MotorControl_calibrateMotors(motor_axis_e motorSide) {
-  printf("%i\n", motorControl[motorSide].calibrationState);
   bool timeMet;
   switch (motorControl[motorSide].calibrationState) {
   case INITIAL_CALIBRATION_STATE:
@@ -69,13 +68,13 @@ void MotorControl_calibrateMotors(motor_axis_e motorSide) {
       can__tx(can1, &can_msg, 0);
       SoftwareTimer_startTime(&calibrationTime, MAX_CALIBRATION_TIME_MS);
       motorControl[motorSide].calibrationState = ENCODER_CALIBRATION_STAGE;
-      printf("1\n");
     }
     break; /* optional */
 
   case ENCODER_CALIBRATION_STAGE:
     timeMet = SoftwareTimer_hasTimeExpired(&calibrationTime);
     if ((motorControl[motorSide].motorState_e == ENCODER_INDEX_SEARCH) || (timeMet == true)) {
+
       motorControl[motorSide].calibrationState = ENCODER_CALIBRATED;
     }
     break; /* optional */
