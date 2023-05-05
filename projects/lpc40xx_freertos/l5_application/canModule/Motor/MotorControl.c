@@ -44,7 +44,7 @@ void MotorControl_sendVelocityData(motor_axis_e motorSide) {
   can__tx(can1, &can_msg, 0);
 }
 
-void MotorControl_updateVelocityData(float inputVelocity, motor_axis_e motorSide) {
+void MotorControl_updateVelocityData(motor_axis_e motorSide, float inputVelocity) {
   if (motorSystemCalibrated == true) {
     motorControl[motorSide].inputSpeed = inputVelocity;
   }
@@ -55,7 +55,6 @@ void MotorControl_setState(motor_axis_e motorSide, axis_state_e stateValue) {
 }
 
 void MotorControl_calibrateMotors(motor_axis_e motorSide) {
-  printf("%i\n", motorControl[motorSide].calibrationState);
   bool timeMet;
   switch (motorControl[motorSide].calibrationState) {
   case INITIAL_CALIBRATION_STATE:
@@ -69,14 +68,21 @@ void MotorControl_calibrateMotors(motor_axis_e motorSide) {
       can__tx(can1, &can_msg, 0);
       SoftwareTimer_startTime(&calibrationTime, MAX_CALIBRATION_TIME_MS);
       motorControl[motorSide].calibrationState = ENCODER_CALIBRATION_STAGE;
-      printf("1\n");
     }
     break; /* optional */
 
   case ENCODER_CALIBRATION_STAGE:
     timeMet = SoftwareTimer_hasTimeExpired(&calibrationTime);
     if ((motorControl[motorSide].motorState_e == ENCODER_INDEX_SEARCH) || (timeMet == true)) {
+
       motorControl[motorSide].calibrationState = ENCODER_CALIBRATED;
+      dbc_Set_Axis_State_s axisState;
+      axisState.Axis_Requested_State = CLOSED_LOOP_CONTROL;
+      can__msg_t can_msg = {};
+      const dbc_message_header_t canMsgData = dbc_encode_Set_Axis_State(can_msg.data.bytes, &axisState);
+      can_msg.msg_id = canMsgData.message_id | (motorControl[motorSide].axisCanID << MOTOR_CAN_ID_BIT_POSITION);
+      can_msg.frame_fields.data_len = canMsgData.message_dlc;
+      can__tx(can1, &can_msg, 0);
     }
     break; /* optional */
 

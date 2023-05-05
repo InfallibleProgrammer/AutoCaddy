@@ -81,6 +81,7 @@ void periodic_callbacks_1Hz_sendspeed(void) {
   dbc_Motor_SpeedLog_s motorSpeed;
   motorSpeed.MotorSpeed0_rpm = MotorControl_getMotorSpeed(MOTOR_0);
   motorSpeed.MotorSpeed1_rpm = MotorControl_getMotorSpeed(MOTOR_1);
+  printf("motorSpeed: %f %f", motorSpeed.MotorSpeed0_rpm, motorSpeed.MotorSpeed1_rpm);
   const dbc_message_header_t canMsgData = dbc_encode_Motor_SpeedLog(can_msg.data.bytes, &motorSpeed);
   can_msg.msg_id = canMsgData.message_id;
   can_msg.frame_fields.data_len = canMsgData.message_dlc;

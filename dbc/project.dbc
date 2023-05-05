@@ -134,8 +134,8 @@ BO_ 501 GPS_CURRENT_INFO: 8 BRAIN
  SG_ GPS_CURRENT_LONG : 32|32@1+ (0.000001,-180.000000) [-180|180] "degrees" DBG
  
 BO_ 28 Motor_SpeedLog: 8 MOTOR
- SG_ MotorSpeed0_rpm : 0|32@1+ (1e-06,0) [-5|5] ""  BRAIN
- SG_ MotorSpeed1_rpm : 32|32@1+ (1e-06,0) [-5|5] ""  BRAIN
+ SG_ MotorSpeed0_rpm : 0|12@1+ (0.01,0) [-5|5] ""  BRAIN
+ SG_ MotorSpeed1_rpm : 12|12@1+ (0.01,0) [-5|5] ""  BRAIN
 
 
 

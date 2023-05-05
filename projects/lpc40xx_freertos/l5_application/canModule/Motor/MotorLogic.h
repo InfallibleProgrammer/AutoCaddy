@@ -6,3 +6,5 @@ typedef enum {
 } motorSpeed_e;
 
 void updateMotorValues(float bearing, float distance);
+
+void print_speed(void);

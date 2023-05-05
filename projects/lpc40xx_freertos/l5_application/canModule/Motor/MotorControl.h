@@ -39,7 +39,7 @@ typedef struct {
 
 void MotorControl_sendVelocityData(motor_axis_e motorSide);
 
-void MotorControl_updateVelocityData(float inputVelocity, motor_axis_e motorSide);
+void MotorControl_updateVelocityData(motor_axis_e motorSide, float inputVelocity);
 
 void MotorControl_calibrateMotors(motor_axis_e motorSide);
 

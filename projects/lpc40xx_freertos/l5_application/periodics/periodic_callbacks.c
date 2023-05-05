@@ -25,12 +25,12 @@ void periodic_callbacks__1Hz(uint32_t callback_count) {
   periodic_callbacks_1Hz_Velocity();
   MotorControl_motorCalibrationSequence();
   periodic_callbacks_1Hz_sendspeed();
+  // print_speed();
   // Add your code here
 }
 
 void periodic_callbacks__10Hz(uint32_t callback_count) {
   gpio__toggle(board_io__get_led1());
-  updateMotorValues(); // update values for the motors
   // Add your code here
 }
 void periodic_callbacks__100Hz(uint32_t callback_count) {
