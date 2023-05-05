@@ -11,10 +11,16 @@ static char coordinate_buffer[512U] = {0U};
 static keyword_e parsed_keyword = KEYWORD_COUNT;
 
 static keyword_e ble_position__parse_keyword(char *message_buffer, size_t message_size) {
-  keyword_e keyword = STOP;
+  keyword_e keyword = KEYWORD_COUNT;
 
   if (message_buffer[first_index] == 'L') {
     keyword = (message_buffer[second_index] == 'o') ? LONGITUDE : LATITUDE;
+  } else if (message_buffer[first_index] == 'D') {
+    keyword = DISTANCE;
+  } else if (message_buffer[first_index] == 'B') {
+    keyword = BEARING;
+  } else if (message_buffer[first_index] == 'S') {
+    keyword = STOP;
   }
 
   return keyword;
@@ -43,7 +49,7 @@ static long double ble_position__parse_latitude_longitude(char *message_buffer, 
   return (sign) ? value : (-value);
 }
 
-static bool ble_position__handle_latitude_longitude(long double parsed_coordinate, coordinate_s *coordinate) {
+static bool ble_position__handle_parsing(long double parsed_coordinate, coordinate_s *coordinate) {
   bool coordinate_complete = false;
   switch (parsed_keyword) {
   case LONGITUDE:
@@ -51,9 +57,24 @@ static bool ble_position__handle_latitude_longitude(long double parsed_coordinat
     break;
   case LATITUDE:
     coordinate->latitude = parsed_coordinate;
+    coordinate->keyword = LONGITUDE;
+    coordinate_complete = true;
+    break;
+  case DISTANCE:
+    coordinate->distance = parsed_coordinate;
+    break;
+  case BEARING:
+    coordinate->bearing = parsed_coordinate;
+    coordinate->latitude = 0;
+    coordinate->longitutde = 0;
+    coordinate->keyword = DISTANCE;
     coordinate_complete = true;
     break;
   case STOP:
+    memset(coordinate, 0, sizeof(coordinate_s));
+    coordinate->keyword = STOP;
+    coordinate_complete = true;
+    break;
   case KEYWORD_COUNT:
   default:
     break;
@@ -74,7 +95,7 @@ bool ble_position__periodic(coordinate_s *cooridnate) {
     } else if (coordinate_buffer[index] == ',') {
       // parse lat_long
       const long double value = ble_position__parse_latitude_longitude(coordinate_buffer, index);
-      coordinate_parsed = ble_position__handle_latitude_longitude(value, cooridnate);
+      coordinate_parsed = ble_position__handle_parsing(value, cooridnate);
       memset(coordinate_buffer, 0U, sizeof(coordinate_buffer));
       index = 0U;
     } else {
