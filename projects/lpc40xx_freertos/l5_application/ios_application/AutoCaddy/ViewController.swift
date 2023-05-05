@@ -11,10 +11,22 @@ import CoreBluetooth
 
 //class ViewController: UIViewController, CLLocationManagerDelegate
 class ViewController: UIViewController, CLLocationManagerDelegate {
-
+    
+    // labels
     @IBOutlet weak var statusLabel: UILabel!
+    @IBOutlet weak var distanceLabel: UILabel!
+    @IBOutlet weak var bearingLabel: UILabel!
+    @IBOutlet weak var distanceMeasurementLabel: UILabel!
+    @IBOutlet weak var bearingMeasurementLabel: UILabel!
+    
+    // buttons
     @IBOutlet var startButton: UIButton!
     @IBOutlet var stopButton: UIButton!
+    @IBOutlet weak var distanceAndBearingButton: UIButton!
+    
+    // sliders
+    @IBOutlet weak var bearingSlider: UISlider!
+    @IBOutlet weak var distanceSlider: UISlider!
     
     var locationManager: CLLocationManager = CLLocationManager()
     var bluetoothManager: CBCentralManager!
@@ -52,6 +64,12 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         locationManager.desiredAccuracy = kCLLocationAccuracyBestForNavigation
         locationManager.requestWhenInUseAuthorization()
         locationManager.startUpdatingLocation()
+        distanceSlider.isEnabled = true
+        bearingSlider.isEnabled = true
+        distanceLabel.text = "Distance"
+        distanceMeasurementLabel.text = String(distanceSlider.value)
+        bearingMeasurementLabel.text = String(bearingSlider.value)
+        bearingLabel.text = "Bearing"
     }
     
     func sendOverBLE(withValue value: Data) {
@@ -65,13 +83,13 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         }
         if(bluetooth_is_connected && transmit_location && characteristic_found) {
             let longitude = String(first.coordinate.longitude) + ","
-            let longitude_string = "Longitude:"
+            let longitude_string = "Lo:"
             guard let data = longitude_string.data(using: String.Encoding.utf8) else { return }
             sendOverBLE(withValue: data)
             guard let data = longitude.data(using: String.Encoding.utf8) else { return }
             sendOverBLE(withValue: data)
             let latitude = String(first.coordinate.latitude) + ","
-            let latitude_string = "Latitude:"                               
+            let latitude_string = "La:"
             guard let data = latitude_string.data(using: String.Encoding.utf8) else { return }
             sendOverBLE(withValue: data)
             guard let data = latitude.data(using: String.Encoding.utf8) else { return }
@@ -93,10 +111,34 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     @IBAction func stopButtonTapped(_ sender: Any) {
         startButton.setTitle("Transmit Location", for: .normal)
         transmit_location = false
-        let stopString = "STOP:"
+        let stopString = "S:0,"
         guard let command = stopString.data(using: String.Encoding.utf8) else { return }
         sendOverBLE(withValue: command)
     }
+    
+    // action to perform when 'distanceAndBearing' button is tapped
+    
+    @IBAction func distanceAndBearingButtonTapped(_ sender: Any) {
+        transmit_location = false
+        startButton.setTitle("Transmit Location", for: .normal)
+        let distanceValue = "D:" + String(distanceSlider.value) + ","
+        let bearingValue = "B:" + String(bearingSlider.value) + ","
+        guard let distanceData = distanceValue.data(using: String.Encoding.utf8) else { return }
+        sendOverBLE(withValue: distanceData)
+        guard let bearingData = bearingValue.data(using: String.Encoding.utf8) else { return }
+        sendOverBLE(withValue: bearingData)
+    }
+    
+    // action performed when distanceSlider is changed
+    @IBAction func distanceSliderChanged(_ sender: Any) {
+        distanceMeasurementLabel.text = String(distanceSlider.value)
+    }
+    
+    //action performed when bearingSlider is changed
+    @IBAction func bearingSliderChanged(_ sender: Any) {
+        bearingMeasurementLabel.text = String(bearingSlider.value)
+    }
+    
 }
 
 // extension to handle Bluetooth states
