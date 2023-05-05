@@ -11,19 +11,19 @@ interpolation_point_xy distance_lookupTable[5] = {
         .y = 0,
     },
     {
-        .x = 10,
-        .y = 0.5,
+        .x = 3.0f,
+        .y = 0.15,
     },
     {
-        .x = 20,
+        .x = 7.0f,
         .y = 1.5,
     },
     {
-        .x = 30,
+        .x = 10,
         .y = 2.5,
     },
     {
-        .x = 50,
+        .x = 17,
         .y = 3,
     },
 

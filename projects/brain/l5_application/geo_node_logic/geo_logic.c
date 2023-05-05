@@ -144,11 +144,11 @@ dbc_COMPASS_HEADING_DISTANCE_s determine_compass_heading_and_distance(void) {
   current_destination_information.DESTINATION_HEADING = gps_bearing - current_destination_information.CURRENT_HEADING;
   // current_destination_information.DESTINATION_HEADING = get_current_bearing();
   current_destination_information.DISTANCE = calculate_distance_rc_car_to_destination_in_meters();
-  // printf("Current heading: %f\n", current_destination_information.CURRENT_HEADING);
-  // printf("Destination bearing: %f\n", current_destination_information.DESTINATION_HEADING);
-  // printf("Destination distance in meters: %f\n", current_destination_information.DISTANCE);
-  // printf("GPS: Longitude: %f \t Latitude: %f\n", gps_peripheral_data.longitude, gps_peripheral_data.latitude);
-  // printf("PHONE: Longitude: %f \t Latitude: %f\n", phone_location.longitutde, phone_location.latitude);
+  printf("Current heading: %f\n", current_destination_information.CURRENT_HEADING);
+  printf("Destination bearing: %f\n", current_destination_information.DESTINATION_HEADING);
+  printf("Destination distance in meters: %f\n", current_destination_information.DISTANCE);
+  printf("GPS: Longitude: %f \t Latitude: %f\n", gps_peripheral_data.longitude, gps_peripheral_data.latitude);
+  printf("PHONE: Longitude: %f \t Latitude: %f\n", phone_location.longitutde, phone_location.latitude);
   return current_destination_information;
 }
 
